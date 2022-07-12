@@ -4,7 +4,7 @@
 
 ## เซ็นเซอร์ที่รองรับ
 
- - [] SHT20 (I2C)
- - [] SHT30 (I2C)
- - [] XY-MD02 (RS485/Modbus RTU)
- 
+ - [ ] SHT20 (I2C)
+ - [ ] SHT30 (I2C)
+ - [ ] XY-MD02 (RS485/Modbus RTU)
+
