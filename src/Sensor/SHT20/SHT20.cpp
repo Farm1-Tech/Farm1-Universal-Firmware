@@ -72,12 +72,12 @@ static bool init_sht = false;
 
 // --------
 void SHT20_process(void* args) {
-    Sensor_t *self = (Sensor_t *) args;
+    // Sensor_t *self = (Sensor_t *) args;
 
 }
 
 SensorStatus_t SHT20_getValue(void* args, SensorType_t type, void* value) {
-    Sensor_t *self = (Sensor_t *) args;
+    // Sensor_t *self = (Sensor_t *) args;
     
     if (!init_sht) {
         init_sht = sht.begin() ? true : false;
