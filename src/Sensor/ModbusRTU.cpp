@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "./ModbusRTU.h"
 
-#define RS485_CH_NUM 1
+#define RS485_CH_NUM 2
 #define RS485_RX_PIN 28
 #define RS485_TX_PIN 29
 #define RS485_DIR_PIN 4
@@ -31,17 +31,12 @@ uint16_t CRC16(uint8_t *buf, int len) {
 	return crc;
 }
 
-void ModbusRTUInit() {
-    RS485.begin(9600, SERIAL_8N1, RS485_RX_PIN, RS485_TX_PIN);
-    RS485.setTimeout(100);
-}
-
 ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) {
     pinMode(RS485_DIR_PIN, OUTPUT);
 	digitalWrite(RS485_DIR_PIN, MODE_RECV);
 
-	Serial2.begin(configs.serial.baudrate, configs.serial.config, RS485_RX_PIN, RS485_TX_PIN); // Rx, Tx
-	Serial2.setTimeout(100);
+	RS485.begin(configs.serial.baudrate, configs.serial.config, RS485_RX_PIN, RS485_TX_PIN); // Rx, Tx
+	RS485.setTimeout(100);
 
 	uint8_t buff[] = {
 		configs.id, // Devices Address
@@ -59,8 +54,8 @@ ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint
 	buff[7] = (crc >> 8) & 0xFF;
 
 	digitalWrite(RS485_DIR_PIN, MODE_SEND);
-	Serial2.write(buff, sizeof(buff));
-	Serial2.flush(); // wait MODE_SEND completed
+	RS485.write(buff, sizeof(buff));
+	RS485.flush(); // wait MODE_SEND completed
 	digitalWrite(RS485_DIR_PIN, MODE_RECV);
 
     uint16_t read_byte_count = 3 + (len * 2) + 2; // ID, Function Code, Byte count, [...data], checksum

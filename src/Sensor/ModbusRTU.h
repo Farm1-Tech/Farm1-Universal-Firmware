@@ -19,5 +19,4 @@ typedef struct {
   ModbusSerialConfigs_t serial;
 } ModbusDeviceConfigs_t;
 
-void ModbusRTUInit() ;
 ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) ;
