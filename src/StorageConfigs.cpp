@@ -3,6 +3,7 @@
 #include "./StorageConfigs.h"
 
 #define GLOBAL_FILE_CONFIGS "/configs.json"
+
 DynamicJsonDocument GlobalConfigs(1024);
 
 static bool fileWrite(String fileName, String content) {

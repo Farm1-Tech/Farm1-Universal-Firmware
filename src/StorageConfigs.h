@@ -1,7 +1,7 @@
 #pragma once
 #include "ArduinoJson.h"
 
-DynamicJsonDocument GlobalConfigs;
+extern DynamicJsonDocument GlobalConfigs;
 
 bool StorageConfigs_load() ;
 bool StorageConfigs_save() ;

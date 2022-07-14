@@ -6,6 +6,7 @@
 #include "./Board/Board.h"
 #include "./SmartConfig.h"
 #include "./StorageConfigs.h"
+#include "./WiFiManager.h"
 
 #define MAX_PRESS_TIME (5 * 1000)
 
@@ -61,6 +62,7 @@ void setup() {
 void loop() {
     static bool modeConfig = false;
     if (!modeConfig) {
+        WiFiManager_process();
         Cloud[0].process((void*)&Cloud[0]);
         if (CheckButtonEnterToConfigsMode()) {
             modeConfig = true;
