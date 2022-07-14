@@ -27,3 +27,6 @@ const Sensor_t Sensor[] = {
 
     BH1750_Sensor,
 };
+const uint8_t Sensor_length = sizeof(Sensor) / sizeof(Sensor_t);
+
+SensorStatus_t Sensor_getValueOne(SensorType_t, void*) ;
