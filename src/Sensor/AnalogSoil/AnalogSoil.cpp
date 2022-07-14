@@ -1,6 +1,7 @@
 #include "./AnalogSoil.h"
+#include "../../Board/Board.h"
 
-#define ANALOG_PIN 0
+#define ANALOG_PIN ONBOARD_ANALOG0_PIN
 
 void AnalogSoil_process(void* args) {
 

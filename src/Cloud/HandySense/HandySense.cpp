@@ -54,16 +54,22 @@ void HandySense_process(void* args) {
 
         state = 1;
     }
-    if (state == 1) { // Connect
+    if (state == 1) { // Wait WiFi connect
+        if (WiFi.isConnected()) {
+            state = 2;
+        }
+    }
+    if (state == 2) { // Connect
+
         if (client->connect("", "", "")) { // Connected
             client->subscribe("@private/#");
 
-            state = 2;
+            state = 3;
         } else {
             Serial.println("NETPIE connect fail");
         }
     }
-    if (state == 2) {
+    if (state == 3) {
         client->loop(); // keep mqtt work
 
         if (!client->connected()) {

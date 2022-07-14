@@ -12,6 +12,7 @@ static void WiFiEvent(WiFiEvent_t event){
         case SYSTEM_EVENT_STA_LOST_IP:
             Serial.println("WiFi Disconnect");
             wifi_force_disconnect = true;
+            WiFi.removeEvent(WiFiEvent);
             break;
         default:
             break;
@@ -22,25 +23,33 @@ static int state = 0;
 
 void WiFiManager_process() {
     if (state == 0) {
-        WiFi.onEvent(WiFiEvent);
-    } else if (state == 1) {
         if (!WiFi.isConnected()) {
             if (GlobalConfigs.containsKey("wifi") && GlobalConfigs["wifi"].containsKey("ssid") && GlobalConfigs["wifi"].containsKey("password")) {
+                Serial.println("Reconnect WiFi");
+                WiFi.onEvent(WiFiEvent);
                 WiFi.begin(
                     GlobalConfigs["wifi"]["ssid"].as<const char*>(),
                     GlobalConfigs["wifi"]["password"].as<const char*>()
                 );
-                state = 2;
+                state = 1;
             }
         }
-    } else if (state == 2) {
-        if (WiFi.isConnected() || wifi_force_disconnect) {
-            if (wifi_force_disconnect) {
-                WiFi.disconnect();
+    } else if (state == 1) {
+        if (WiFi.isConnected()) {
+            WiFi.removeEvent(WiFiEvent);
+            
+            Serial.print("WiFi connected, IP: ");
+            Serial.print(WiFi.localIP());
+            Serial.print("\tSSID: ");
+            Serial.print(WiFi.SSID());
+            Serial.println();
+                
+            state = 0;
+        } else if (wifi_force_disconnect) {
+            WiFi.disconnect();
 
-                wifi_force_disconnect = false;
-            }
-            state = 1;
+            wifi_force_disconnect = false;
+            state = 0;
         } else {
             // LED Blink status
             static uint64_t last_led_blink = 0;

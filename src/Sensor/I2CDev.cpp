@@ -1,8 +1,7 @@
 #include "Arduino.h"
 #include "Wire.h"
 
-#define I2C_SDA_PIN 21
-#define I2C_SCL_PIN 22
+#include "../Board/Board.h"
 
 SemaphoreHandle_t I2CSemaphore;
 

@@ -29,4 +29,5 @@ const Sensor_t Sensor[] = {
 };
 const uint8_t Sensor_length = sizeof(Sensor) / sizeof(Sensor_t);
 
+bool Sensor_init() ;
 SensorStatus_t Sensor_getValueOne(SensorType_t, void*) ;

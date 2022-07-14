@@ -21,9 +21,15 @@ SmartConfigStatus_t SmartConfig_process() {
         if (WiFi.smartConfigDone()) {
             Serial.println("SmartConfig received.");
 
+            Serial.print("SSID: ");
+            Serial.println(WiFi.SSID());
+            Serial.print("Password: ");
+            Serial.println(WiFi.psk());
+
             // Save configs
             GlobalConfigs["wifi"]["ssid"] = WiFi.SSID();
             GlobalConfigs["wifi"]["password"] = WiFi.psk();
+            serializeJson(GlobalConfigs, Serial);
 
             // Save Configs
             if (!StorageConfigs_save()) {

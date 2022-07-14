@@ -12,6 +12,12 @@
 // Onboard analog
 #define ONBOARD_ANALOG_NUM 2
 #define ONBOARD_ANALOG_PIN { 36, 39 }
+#define ONBOARD_ANALOG0_PIN 36
+#define ONBOARD_ANALOG1_PIN 39
+
+// Onboard I2C
+#define I2C_SDA_PIN 21
+#define I2C_SCL_PIN 22
 
 // Configs button
 #define CONFIGS_BUTTON_PIN 0

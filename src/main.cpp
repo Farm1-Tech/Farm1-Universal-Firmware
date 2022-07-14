@@ -2,6 +2,7 @@
 #include "SPIFFS.h"
 #include "WiFi.h"
 
+#include "./Sensor/Sensor.h"
 #include "./Cloud/Cloud.h"
 #include "./Board/Board.h"
 #include "./SmartConfig.h"
@@ -43,6 +44,9 @@ bool CheckButtonEnterToConfigsMode() {
 // Main Program
 void setup() {
   Serial.begin(115200);
+
+  // Add sensor work
+  Sensor_init();
   
   // Init SPIFFS
   if (!SPIFFS.begin(true)) { // Format if failed
@@ -66,10 +70,12 @@ void loop() {
         Cloud[0].process((void*)&Cloud[0]);
         if (CheckButtonEnterToConfigsMode()) {
             modeConfig = true;
+            Serial.println("Enter to config mode");
         }
     } else {
         if (SmartConfig_process() == FINISH_CONFIG) {
             modeConfig = false;
+            Serial.println("Exit config mode");
         }
     }
 

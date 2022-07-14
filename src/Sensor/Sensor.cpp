@@ -1,4 +1,11 @@
 #include "./Sensor.h"
+#include "./I2CDev.h"
+
+bool Sensor_init() {
+    I2CSetup();
+
+    return true;
+}
 
 SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
     for (uint8_t i=0;i<Sensor_length;i++) {
