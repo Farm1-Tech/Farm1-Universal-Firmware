@@ -4,9 +4,10 @@
 
 ## ฟีเจอร์
 
- - [ ] ตั้งค่าเชื่อมต่อ WiFi ผ่าน Smart Configs
+ - [x] ตั้งค่าเชื่อมต่อ WiFi ผ่าน Smart Configs
  - [ ] เชื่อมต่อ HandySense
  - [ ] เชื่อมต่อ Blynk IoT
+ - [ ] REST API
  - [ ] ใช้งานแบบ Offline
 
 ## เซ็นเซอร์ที่รองรับ
