@@ -3,6 +3,7 @@
 #include <WiFi.h>
 #include "Time/SystemTime.h"
 #include "Sensor/Sensor.h"
+#include "StorageConfigs.h"
 
 #define DATA_SEND_INTERVAL_MS (2 * 60 * 60 * 1000) // 2 min = 2 * 60 * 60 * 1000 ms
 #define SHADOW_UPDATE_INTERVAL_MS (500) // 500 mS
@@ -60,13 +61,31 @@ void HandySense_process(void* args) {
         }
     }
     if (state == 2) { // Connect
+        if (
+            !GlobalConfigs.containsKey("handysense") ||
+            !GlobalConfigs["handysense"].containsKey("server") ||
+            !GlobalConfigs["handysense"].containsKey("port") ||
+            !GlobalConfigs["handysense"].containsKey("client") ||
+            !GlobalConfigs["handysense"].containsKey("user") ||
+            !GlobalConfigs["handysense"].containsKey("pass")
+        ) {
+            return;
+        }
 
-        if (client->connect("", "", "")) { // Connected
+        const char *server = GlobalConfigs["handysense"]["server"].as<const char*>();
+        const int port = GlobalConfigs["handysense"]["port"].as<int>();
+        const char *client_id = GlobalConfigs["handysense"]["client"].as<const char*>();
+        const char *username = GlobalConfigs["handysense"]["user"].as<const char*>();
+        const char *password = GlobalConfigs["handysense"]["pass"].as<const char*>();
+
+        client->setServer(server, port);
+        if (client->connect(client_id, username, password)) { // Connected
             client->subscribe("@private/#");
 
             state = 3;
         } else {
             Serial.println("NETPIE connect fail");
+            state = 1;
         }
     }
     if (state == 3) {
@@ -154,7 +173,7 @@ void HandySense_process(void* args) {
                 }
             } else {
                 Serial.println("Send data to NETPIE fail");
-                delay(1000); // stop 1 sec for try in next cycle
+                state = 1; // Go back to check WiFi and reconnect
             }
         }
     }
