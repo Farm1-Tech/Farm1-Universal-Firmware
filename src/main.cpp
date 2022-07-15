@@ -8,6 +8,7 @@
 #include "./SmartConfig.h"
 #include "./StorageConfigs.h"
 #include "./WiFiManager.h"
+#include "./Time/SystemTime.h"
 
 #define MAX_PRESS_TIME (5 * 1000)
 
@@ -45,8 +46,9 @@ bool CheckButtonEnterToConfigsMode() {
 void setup() {
   Serial.begin(115200);
 
-  // Add sensor work
+  // Init system module
   Sensor_init();
+  Time_init();
   
   // Init SPIFFS
   if (!SPIFFS.begin(true)) { // Format if failed

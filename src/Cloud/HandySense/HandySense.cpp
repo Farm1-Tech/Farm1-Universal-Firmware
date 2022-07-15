@@ -3,10 +3,11 @@
 #include <WiFi.h>
 #include "Time/SystemTime.h"
 #include "Sensor/Sensor.h"
+#include "Output/Output.h"
 #include "StorageConfigs.h"
 
 #define DATA_SEND_INTERVAL_MS (2 * 60 * 60 * 1000) // 2 min = 2 * 60 * 60 * 1000 ms
-#define SHADOW_UPDATE_INTERVAL_MS (500) // 500 mS
+#define SHADOW_UPDATE_INTERVAL_MS (1 * 60 * 1000) // 1 min
 static int state = 0;
 static bool force_shadow_update = false;
 
@@ -14,23 +15,55 @@ static Client *tcpClient = NULL;
 static PubSubClient *client = NULL;
 
 static void HandySense_receive_callback(String topic, uint8_t* payload, unsigned int length) {
-    if (topic.startsWith("@private/led")) { // Relay direct control
-        uint8_t ch = 0;
-        if (!sscanf(topic.c_str(), "@private/led/%d", &ch) != 1) {
-            Serial.println("CH of relay error");
-        }
-
-        // digitalWrite(....)
-    } else if (topic.startsWith("@private/max_temp")) {
-
-    } else if (topic.startsWith("@private/min_temp")) {
-
-    } else if (topic.startsWith("@private/max_soil")) {
-
-    } else if (topic.startsWith("@private/min_soil")) {
-
+    String payload_str = "";
+    for (int i=0;i<length;i++) {
+        payload_str += (char) payload[i];
     }
 
+    int ch = 0;
+    if (sscanf(topic.c_str(), "@private/%*s/%d", &ch) != 1) {
+        Serial.println("CH error");
+    }
+    if (topic.startsWith("@private/led")) { // Relay direct control
+        Output_setValueOne(ch, payload_str == "on");
+        force_shadow_update = true;
+    } else if (topic.startsWith("@private/timer")) { // Control output by Timer configs
+        /*
+          Msg:   1,0,1,1,1,1,1,1,17:20:00,17:22:00 => <EN, repeat_mo, ...., start, end>
+          topic: @private/timer00 => @private/timer<output_n, timer_n>
+        */
+        int timer = 0;
+        if (sscanf(topic.c_str(), "@private/timer%1d%1d", &ch, &timer) != 2) {
+            Serial.println("Topic error");
+        }
+        
+        int enable, repeat[7], start_hour, start_min, stop_hour, stop_min;
+        if (sscanf(payload_str.c_str(), 
+            "%d,%d,%d,%d,%d,%d,%d,%d,%d:%d:%*d,%d:%d:%*d", 
+            &enable, &repeat[0], &repeat[1], &repeat[2], &repeat[3], &repeat[4], &repeat[5], &repeat[6], &start_hour, &start_min, &stop_hour, &stop_min
+        ) != 12) {
+            Serial.println("Payload error");
+        }
+
+        JsonObject timerConfigs = GlobalConfigs["handysense"]["control_by_timer"][ch][timer];
+        timerConfigs["enable"] = enable == 1;
+        timerConfigs["start"] = String(start_hour) + ":" + String(start_min);
+        timerConfigs["stop"] = String(stop_hour) + ":" + String(stop_min);
+        for (int i=0;i<7;i++) {
+            timerConfigs["repeat"][i] = repeat[i] == 1;
+        }
+    } else if (topic.startsWith("@private/min_temp")) { // Control output by Temp min configs
+        GlobalConfigs["handysense"]["control_by_temp"][ch]["min"] = payload_str.toInt();
+    } else if (topic.startsWith("@private/max_temp")) { // Control output by Temp max configs
+        GlobalConfigs["handysense"]["control_by_temp"][ch]["max"] = payload_str.toInt();
+    } else if (topic.startsWith("@private/min_soil")) { // Control output by Soil min configs
+        GlobalConfigs["handysense"]["control_by_soil"][ch]["min"] = payload_str.toInt();
+    } else if (topic.startsWith("@private/max_soil")) { // Control output by Soil max configs
+        GlobalConfigs["handysense"]["control_by_soil"][ch]["max"] = payload_str.toInt();
+    }
+    if (topic.startsWith("@private/min_") || topic.startsWith("@private/max_") || topic.startsWith("@private/timer")) {
+        StorageConfigs_save();
+    }
     force_shadow_update = true;
 }
 
@@ -61,22 +94,23 @@ void HandySense_process(void* args) {
         }
     }
     if (state == 2) { // Connect
+        JsonObject connectionInfo = GlobalConfigs["handysense"]["connection"].as<JsonObject>();
         if (
-            !GlobalConfigs.containsKey("handysense") ||
-            !GlobalConfigs["handysense"].containsKey("server") ||
-            !GlobalConfigs["handysense"].containsKey("port") ||
-            !GlobalConfigs["handysense"].containsKey("client") ||
-            !GlobalConfigs["handysense"].containsKey("user") ||
-            !GlobalConfigs["handysense"].containsKey("pass")
+            !connectionInfo.isNull() ||
+            !connectionInfo.containsKey("server") ||
+            !connectionInfo.containsKey("port") ||
+            !connectionInfo.containsKey("client") ||
+            !connectionInfo.containsKey("user") ||
+            !connectionInfo.containsKey("pass")
         ) {
             return;
         }
 
-        const char *server = GlobalConfigs["handysense"]["server"].as<const char*>();
-        const int port = GlobalConfigs["handysense"]["port"].as<int>();
-        const char *client_id = GlobalConfigs["handysense"]["client"].as<const char*>();
-        const char *username = GlobalConfigs["handysense"]["user"].as<const char*>();
-        const char *password = GlobalConfigs["handysense"]["pass"].as<const char*>();
+        const char *server = connectionInfo["server"].as<const char*>();
+        const int port = connectionInfo["port"].as<int>();
+        const char *client_id = connectionInfo["client"].as<const char*>();
+        const char *username = connectionInfo["user"].as<const char*>();
+        const char *password = connectionInfo["pass"].as<const char*>();
 
         client->setServer(server, port);
         if (client->connect(client_id, username, password)) { // Connected
@@ -105,7 +139,10 @@ void HandySense_process(void* args) {
             float soilPERCENT = 80.3;
 
             // Read real data from sensor
-
+            Sensor_getValueOne(TEMPERATURE, (void*) &tempC);
+            Sensor_getValueOne(HUMIDITY, (void*) &humiRH);
+            Sensor_getValueOne(AMBIENT_LIGHT, (void*) &lightKLUX);
+            Sensor_getValueOne(SOIL, (void*) &soilPERCENT);
             // ---------
 
             char buff[256];
@@ -126,19 +163,25 @@ void HandySense_process(void* args) {
         static uint64_t last_send_shadow_update = 0;
         if ((last_send_shadow_update == 0) || ((millis() - last_send_shadow_update) > (SHADOW_UPDATE_INTERVAL_MS)) || force_shadow_update) {
             int relay_status[4] = { 0, 0, 0, 0 };
+            for (int i=0;i<4;i++) {
+                bool value = 0;
+                Output_getValueOne(i, &value);
+                relay_status[i] = value ? 1 : 0;
+            }
+
             struct {
                 uint8_t min;
                 uint8_t max;
             } soil_set[4], temp_set[4];
             
             for (int i=0;i<4;i++) {
-                soil_set[i].min = 0;
-                soil_set[i].max = 0;
+                soil_set[i].min = GlobalConfigs["handysense"]["control_by_soil"][i]["min"].as<int>();
+                soil_set[i].max = GlobalConfigs["handysense"]["control_by_soil"][i]["max"].as<int>();
             }
 
             for (int i=0;i<4;i++) {
-                temp_set[i].min = 0;
-                temp_set[i].max = 0;
+                temp_set[i].min = GlobalConfigs["handysense"]["control_by_temp"][i]["min"].as<int>();
+                temp_set[i].max = GlobalConfigs["handysense"]["control_by_temp"][i]["max"].as<int>();
             }
 
             char buff[256];
@@ -178,25 +221,82 @@ void HandySense_process(void* args) {
         }
     }
 
+#define ON_OUTPUT() ({ \
+            bool active = false; \
+            Output_getValueOne(ch, &active); \
+            if (!active) { \
+                Output_setValueOne(ch, true); \
+                force_shadow_update = true; \
+            } \
+})
+
+#define OFF_OUTPUT() ({ \
+            bool active = false; \
+            Output_getValueOne(ch, &active); \
+            if (active) { \
+                Output_setValueOne(ch, false); \
+                force_shadow_update = true; \
+            } \
+})
+
     // Keep output timer run normal
     struct tm timeinfo;
     if (Time_now(&timeinfo) == TIME_OK) {
-        uint16_t curentTimer = (timeinfo.tm_hour * 60) + timeinfo.tm_min;
-        uint8_t dayofweek = timeinfo.tm_wday;
+        int8_t week_day = timeinfo.tm_wday == 0 ? 6 : timeinfo.tm_wday - 1; // Cloud start Monday but time.h start Sunday
+        for (int ch=0;ch<4;ch++) {
+            for (int timer=0;timer<3;timer++) {
+                JsonObject timerConfigs = GlobalConfigs["handysense"]["control_by_timer"][ch][timer];
+                if (timerConfigs["enable"].isNull() || timerConfigs["start"].isNull() || timerConfigs["stop"].isNull()) { // Skip if no timer info
+                    continue;
+                }
+                if (!timerConfigs["enable"].as<bool>()) { // Skip if not enable
+                    continue;
+                }
+                if (!timerConfigs["repeat"][week_day].as<bool>()) { // Skip if today not in repeat day
+                    continue;
+                }
+                int start_hour, start_min;
+                sscanf(timerConfigs["start"].as<const char*>(), "%d:%d", &start_hour, &start_min);
 
+                int stop_hour, stop_min;
+                sscanf(timerConfigs["stop"].as<const char*>(), "%d:%d", &stop_hour, &stop_min);
+
+                if ((start_hour == timeinfo.tm_hour) && (start_min == timeinfo.tm_min)) {
+                    ON_OUTPUT();
+                } else if ((stop_hour == timeinfo.tm_hour) && (stop_min == timeinfo.tm_min)) {
+                    OFF_OUTPUT();
+                }
+            }
+        }
     }
 
-    // Keep output by soil run normal
-    float soil_value = 0;
+    // Keep output by soil & temp run normal
+    float soil_value = 0, temp_value = 0;
     Sensor_getValueOne(SOIL, (void*)&soil_value);
-    for (int i=0;i<4;i++) {
-
-    }
-
-    // Keep output by temp run normal
-    float temp_value = 0;
     Sensor_getValueOne(TEMPERATURE, (void*)&temp_value);
-    for (int i=0;i<4;i++) {
+    for (int ch=0;ch<4;ch++) {
+        int soil_min = GlobalConfigs["handysense"]["control_by_soil"][ch]["min"].as<int>();
+        int soil_max = GlobalConfigs["handysense"]["control_by_soil"][ch]["max"].as<int>();
 
+        if ((soil_min != 0) && (soil_max != 0)) {
+            // Soil Low more then soil_min then ON (eg. pump), Soil High over soil_max then OFF
+            if (soil_value < soil_min) {
+                ON_OUTPUT();
+            } else if (soil_value > soil_max) {
+                OFF_OUTPUT();
+            }
+        }
+
+        int temp_min = GlobalConfigs["handysense"]["control_by_temp"][ch]["min"].as<int>();
+        int temp_max = GlobalConfigs["handysense"]["control_by_temp"][ch]["max"].as<int>();
+
+        if ((temp_min != 0) && (temp_max != 0)) {
+            // Temp High over temp_max then ON (eg. fan), Temp Low more then temp_min then OFF
+            if (temp_value > temp_max) {
+                ON_OUTPUT();
+            } else if (temp_value < temp_min) {
+                OFF_OUTPUT();
+            }
+        }
     }
 }

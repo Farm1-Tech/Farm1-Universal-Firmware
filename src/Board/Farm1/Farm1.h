@@ -4,6 +4,7 @@
 // Onboard output
 #define ONBOARD_RELAY_NUM 4
 #define ONBOARD_RELAY_PIN { 25, 14, 12, 13 }
+#define ONBOARD_RELAY_ACTIVE HIGH
 
 // Onboard input digital
 #define ONBOARD_INPUT_NUM 2

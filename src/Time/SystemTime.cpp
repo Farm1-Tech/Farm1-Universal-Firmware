@@ -17,6 +17,7 @@ SystemTimeStatus_t Time_init() {
     return TIME_OK;
 }
 
+
 SystemTimeStatus_t Time_now(struct tm* now) {
     bool getTimeFromInternet = false;
     if (WiFi.isConnected()) {
