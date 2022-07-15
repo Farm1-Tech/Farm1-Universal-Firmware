@@ -183,6 +183,22 @@ void HandySense_process(void* args) {
                 temp_set[i].min = GlobalConfigs["handysense"]["control_by_temp"][i]["min"].as<int>();
                 temp_set[i].max = GlobalConfigs["handysense"]["control_by_temp"][i]["max"].as<int>();
             }
+            
+#define BOOL2STR(a) String(a ? 1 : 0)
+            String timer_text[4 * 3];
+            for (int ch=0;ch<4;ch++) {
+                for (int timer=0;timer<3;timer++) {
+                    JsonObject timerConfigs = GlobalConfigs["handysense"]["control_by_timer"][ch][timer];
+                    String text_timer = "";
+                    text_timer += BOOL2STR(timerConfigs["enable"].as<bool>()) + ",";
+                    for (int repeat_wday=0;repeat_wday<7;repeat_wday++) {
+                        text_timer += BOOL2STR(timerConfigs["repeat"][repeat_wday].as<bool>()) + ",";
+                    }
+                    text_timer += timerConfigs["start"].as<String>() + ":00,";
+                    text_timer += timerConfigs["stop"].as<String>() + ":00";
+                    timer_text[(ch * 3) + timer] = text_timer;
+                }
+            }
 
             char buff[256];
             memset(buff, 0, sizeof(buff));
@@ -197,7 +213,11 @@ void HandySense_process(void* args) {
                     "\"min_temp0\": %d,\"max_temp0\": %d," \
                     "\"min_temp1\": %d,\"max_temp1\": %d," \
                     "\"min_temp2\": %d,\"max_temp2\": %d," \
-                    "\"min_temp3\": %d,\"max_temp3\": %d" \
+                    "\"min_temp3\": %d,\"max_temp3\": %d," \
+                    "\"value_timer00\": \"%s\",\"value_timer01\": \"%s\",\"value_timer02\": \"%s\"" \
+                    "\"value_timer10\": \"%s\",\"value_timer11\": \"%s\",\"value_timer12\": \"%s\"" \
+                    "\"value_timer20\": \"%s\",\"value_timer21\": \"%s\",\"value_timer22\": \"%s\"" \
+                    "\"value_timer30\": \"%s\",\"value_timer31\": \"%s\",\"value_timer32\": \"%s\"" \
                 "}}",
                 relay_status[0], relay_status[1], relay_status[2], relay_status[3],
                 soil_set[0].min, soil_set[0].max,
@@ -207,7 +227,11 @@ void HandySense_process(void* args) {
                 temp_set[0].min, temp_set[0].max,
                 temp_set[1].min, temp_set[1].max,
                 temp_set[2].min, temp_set[2].max,
-                temp_set[3].min, temp_set[3].max
+                temp_set[3].min, temp_set[3].max,
+                timer_text[0].c_str(), timer_text[1].c_str(), timer_text[2].c_str(), 
+                timer_text[3].c_str(), timer_text[4].c_str(), timer_text[5].c_str(), 
+                timer_text[6].c_str(), timer_text[7].c_str(), timer_text[8].c_str(), 
+                timer_text[9].c_str(), timer_text[10].c_str(), timer_text[11].c_str()
             );
             if (client->publish("@shadow/data/update", buff)) {
                 last_send_shadow_update = millis();
