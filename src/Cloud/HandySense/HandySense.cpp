@@ -5,6 +5,7 @@
 #include "Sensor/Sensor.h"
 #include "Output/Output.h"
 #include "StorageConfigs.h"
+#include "./SerialConfigs.h"
 
 #define DATA_SEND_INTERVAL_MS (2 * 60 * 60 * 1000) // 2 min = 2 * 60 * 60 * 1000 ms
 #define SHADOW_UPDATE_INTERVAL_MS (1 * 60 * 1000) // 1 min
@@ -156,7 +157,19 @@ void HandySense_process(void* args) {
                 last_send_sensor = millis();
             } else {
                 Serial.println("Send data to NETPIE fail");
-                delay(1000); // stop 1 sec for try in next cycle
+                state = 99;
+            }
+        } else if (state == 99) {
+            static int sub_state = 0;
+            static uint64_t start_stop = 0;
+            if (sub_state == 0) {
+                start_stop = millis();
+                sub_state = 1;
+            } else if (sub_state == 1) {
+                if ((millis() - start_stop) > 2000) { // Stop 2 sec
+                    sub_state = 0;
+                    state = 3;
+                }
             }
         }
 
@@ -323,4 +336,7 @@ void HandySense_process(void* args) {
             }
         }
     }
+
+    // Keep web configs via Serial work
+    SerialConfigs_process();
 }
