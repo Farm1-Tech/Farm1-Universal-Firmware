@@ -10,6 +10,7 @@
 #include "./WiFiManager.h"
 #include "./Time/SystemTime.h"
 #include "./Display/Display.h"
+#include "./WebServer/WebServer.h"
 
 #define MAX_PRESS_TIME (5 * 1000)
 
@@ -59,6 +60,9 @@ void setup() {
 
   // Init WiFi as Station, start SmartConfig
   WiFi.mode(WIFI_AP_STA);
+
+  // Init HTTP Web Server
+  WebServer_init();
   
   // Load configs
   if (!StorageConfigs_load()) {
