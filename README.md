@@ -44,7 +44,7 @@
  - [ ] Farm1-LCD3.2 (TFT LCD 3.2 inch, SPI)
  - [ ] 20x4 Character LCD (I2C)
 
-### Cloud Service
+## Cloud Service
 
  - [ ] HandySense
  - [ ] Blynk IoT
