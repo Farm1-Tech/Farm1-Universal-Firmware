@@ -5,8 +5,6 @@
 ## ฟีเจอร์
 
  - [x] ตั้งค่าเชื่อมต่อ WiFi ผ่าน Smart Configs
- - [ ] เชื่อมต่อ HandySense
- - [ ] เชื่อมต่อ Blynk IoT
  - [ ] REST API
  - [ ] ใช้งานแบบ Offline
 
@@ -45,3 +43,10 @@
 
  - [ ] Farm1-LCD3.2 (TFT LCD 3.2 inch, SPI)
  - [ ] 20x4 Character LCD (I2C)
+
+### Cloud Service
+
+ - [ ] HandySense
+ - [ ] Blynk IoT
+ - [ ] Azure IoT Central
+ - [ ] AWS IoT
