@@ -9,6 +9,7 @@
 #include "./StorageConfigs.h"
 #include "./WiFiManager.h"
 #include "./Time/SystemTime.h"
+#include "./Display/Display.h"
 
 #define MAX_PRESS_TIME (5 * 1000)
 
@@ -70,6 +71,7 @@ void loop() {
     if (!modeConfig) {
         WiFiManager_process();
         Cloud[0].process((void*)&Cloud[0]);
+        Display_process();
         if (CheckButtonEnterToConfigsMode()) {
             modeConfig = true;
             Serial.println("Enter to config mode");
