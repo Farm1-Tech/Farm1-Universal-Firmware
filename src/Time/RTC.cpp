@@ -2,6 +2,10 @@
 #include "Sensor/I2CDev.h"
 #include "./RTC.h"
 
+#define DS1338 0x68
+#define MCP79411 0x6F
+#define PCF8563 0x51
+
 static bool CheckI2CDevice(int addr) {
     Wire.beginTransmission(addr);
     return Wire.endTransmission() == 0;
@@ -15,7 +19,7 @@ static uint8_t DECtoBCD(uint8_t n) {
     return (((n / 10) << 4) & 0xF0) | ((uint8_t)(n % 10) & 0x0F);
 }
 
-static RTC_Type type = DS1338;
+static uint8_t type = DS1338;
 
 bool RTC_init() {
     if (CheckI2CDevice(DS1338)) {
@@ -33,14 +37,14 @@ bool RTC_init() {
     }
 
     if (type == DS1338) {
-        if (I2CWrite(DS1338, (uint8_t*) "\x07\x00", 2) != 0) {
+        if (I2CWrite(type, (uint8_t*) "\x07\x00", 2) != 0) {
             return false;
         }
     }
 
     if (type == MCP79411) {
         uint8_t rtcsec = 0;
-        if (I2CRead(MCP79411, (uint8_t*) "\x00", 1, &rtcsec, 1) != 0) {
+        if (I2CRead(type, (uint8_t*) "\x00", 1, &rtcsec, 1) != 0) {
             return false;
         }
         Serial.println((byte) rtcsec, HEX);
@@ -56,13 +60,13 @@ bool RTC_init() {
             }
         }
 
-        if (I2CWrite(MCP79411, (uint8_t*) "\x07\x00", 2) != 0) { // Write 0 to EXTOSC flag, Disable external 32.768 kHz input
+        if (I2CWrite(type, (uint8_t*) "\x07\x00", 2) != 0) { // Write 0 to EXTOSC flag, Disable external 32.768 kHz input
             return false;
         }
     }
 
     if (type == PCF8563) {
-        if (I2CWrite(PCF8563, (uint8_t*) "\x00\x00", 2) != 0) { // Write 0 to Oscillator Stop Flag for start
+        if (I2CWrite(type, (uint8_t*) "\x00\x00", 2) != 0) { // Write 0 to Oscillator Stop Flag for start
             return false;
         }
     }

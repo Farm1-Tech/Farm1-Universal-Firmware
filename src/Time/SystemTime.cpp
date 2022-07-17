@@ -31,9 +31,10 @@ SystemTimeStatus_t Time_now(struct tm* now) {
         }
     } else {
         static uint64_t last_sync_rtc = 0;
-        if ((last_sync_rtc == 0) || ((millis() - last_sync_rtc) < RTC_SYNC_INTERVAL_MS)) {
+        if ((last_sync_rtc == 0) || ((millis() - last_sync_rtc) >= RTC_SYNC_INTERVAL_MS)) {
             if (RTC_write(now)) {
                 last_sync_rtc = millis();
+            } else {
                 Serial.println("RTC write sync time FAIL");
             }
         }
