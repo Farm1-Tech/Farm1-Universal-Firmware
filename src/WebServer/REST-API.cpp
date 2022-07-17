@@ -22,16 +22,18 @@ void REST_API_init() {
     });
 
     // Configs
+    server.on("/api/configs", HTTP_GET, [] (AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        response->setCode(200);
+        DynamicJsonDocument jsonDoc(4 * 1024);
+        jsonDoc["device"] = GlobalConfigs["device"].as<JsonObject>();
+        jsonDoc["cloud"] = GlobalConfigs["cloud"].as<JsonObject>();
+        serializeJsonPretty(jsonDoc, *response);
+        request->send(response);
+    });
+
     server.addHandler(new AsyncCallbackJsonWebHandler("/api/configs", [](AsyncWebServerRequest *request, JsonVariant &json) {
-        if (request->method() == HTTP_GET) {
-            AsyncResponseStream *response = request->beginResponseStream("application/json");
-            response->setCode(200);
-            DynamicJsonDocument jsonDoc(4 * 1024);
-            jsonDoc["device"] = GlobalConfigs["device"];
-            jsonDoc["cloud"] = GlobalConfigs["cloud"];
-            serializeJsonPretty(jsonDoc, *response);
-            request->send(response);
-        } else if (request->method() == HTTP_POST) {
+        if (request->method() == HTTP_POST) {
             JsonObject jsonPost = json.as<JsonObject>();
             GlobalConfigs["device"] = jsonPost["device"].as<JsonObject>();
             GlobalConfigs["cloud"] = jsonPost["cloud"].as<JsonObject>();
