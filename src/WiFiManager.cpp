@@ -43,6 +43,17 @@ void WiFiManager_process() {
             Serial.print("\tSSID: ");
             Serial.print(WiFi.SSID());
             Serial.println();
+
+            if (!GlobalConfigs["wifi"]["ssid"].as<String>().equals(WiFi.SSID())) {
+                GlobalConfigs["wifi"]["ssid"] = WiFi.SSID();
+                GlobalConfigs["wifi"]["password"] = WiFi.psk();
+                // serializeJson(GlobalConfigs, Serial);
+
+                // Save Configs
+                if (!StorageConfigs_save()) {
+                    Serial.println("Save configs fail !");
+                }
+            }
                 
             state = 0;
         } else if (wifi_force_disconnect) {

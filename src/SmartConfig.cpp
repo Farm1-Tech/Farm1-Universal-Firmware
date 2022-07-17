@@ -10,9 +10,9 @@ static int state = 0;
 SmartConfigStatus_t SmartConfig_process() {
     if (state == 0) {
         // Delete old configs
-        if (GlobalConfigs.containsKey("wifi")) {
+        /*if (GlobalConfigs.containsKey("wifi")) {
             GlobalConfigs["wifi"].clear();
-        }
+        }*/
 
         WiFi.beginSmartConfig();
 
@@ -26,15 +26,19 @@ SmartConfigStatus_t SmartConfig_process() {
             Serial.print("Password: ");
             Serial.println(WiFi.psk());
 
+            /*
             // Save configs
-            GlobalConfigs["wifi"]["ssid"] = WiFi.SSID();
+            GlobalConfigs["wifi"]["ssid"] = "";
             GlobalConfigs["wifi"]["password"] = WiFi.psk();
-            serializeJson(GlobalConfigs, Serial);
+            // serializeJson(GlobalConfigs, Serial);
 
             // Save Configs
             if (!StorageConfigs_save()) {
                 Serial.println("Save configs fail !");
             }
+            */
+
+            GlobalConfigs["wifi"]["ssid"] = "";
             
             state = 0;
             return FINISH_CONFIG;
