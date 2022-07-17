@@ -1,4 +1,5 @@
 #include "./SHT20.h"
+#include "../I2CDev.h"
 
 Artron_SHT20::Artron_SHT20(TwoWire* wire) : _wire(wire) {
 
@@ -29,31 +30,17 @@ float Artron_SHT20::readHumidity() {
 }
 
 int Artron_SHT20::write(uint8_t command, uint8_t *data, uint8_t len) {
-  this->_wire->beginTransmission(SHT20_ADDR);
-  this->_wire->write(command);
-  this->_wire->write(data, len);
-  int res = this->_wire->endTransmission(true); // Stop
+    uint8_t buff[1 + len];
+    buff[0] = command;
+    if (data && (len > 0)) {
+        memcpy(&buff[1], data, len);
+    }
 
-  return res;
+    return I2CWrite(SHT20_ADDR, buff, 1 + len);
 }
 
 int Artron_SHT20::read(uint8_t command, uint8_t *data, int len, int stop) {
-  this->_wire->beginTransmission(SHT20_ADDR);
-  this->_wire->write(command);
-  int res = this->_wire->endTransmission(true); // Stop
-
-  if (res != 0) {
-    return res;
-  }
-
-  delay(stop);
-
-  int n = this->_wire->requestFrom(SHT20_ADDR, len);
-  for (int i=0;i<n;i++) {
-    data[i] = this->_wire->read();
-  }
-  
-  return n == len ? 0 : -1;
+  return I2CRead(SHT20_ADDR, &command, 1, data, len);
 }
 
 static Artron_SHT20 sht(&Wire);
