@@ -2,6 +2,7 @@
 
 #include "Sensor/SensorDef.h"
 
+void BH1750_getOption(void*, JsonObject) ;
 void BH1750_process(void*) ;
 SensorStatus_t BH1750_getValue(void*, SensorType_t, void*) ;
 
@@ -15,6 +16,7 @@ static Sensor_t BH1750_Sensor = {
     .type = AMBIENT_LIGHT,
     .option = NULL,
     .error = WORK_WELL,
+    .genOption = BH1750_getOption,
     .process = BH1750_process,
     .getValue = BH1750_getValue,
 };

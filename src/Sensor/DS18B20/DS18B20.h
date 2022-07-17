@@ -2,6 +2,7 @@
 
 #include "Sensor/SensorDef.h"
 
+void DS18B20_getOption(void*, JsonObject) ;
 void DS18B20_process(void*) ;
 SensorStatus_t DS18B20_getValue(void*, SensorType_t, void*) ;
 
@@ -15,6 +16,7 @@ static Sensor_t DS18B20_Sensor = {
     .type = TEMPERATURE,
     .option = NULL,
     .error = WORK_WELL,
+    .genOption = DS18B20_getOption,
     .process = DS18B20_process,
     .getValue = DS18B20_getValue,
 };

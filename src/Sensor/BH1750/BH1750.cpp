@@ -2,6 +2,24 @@
 #include "Sensor/I2CDev.h"
 
 #define BH1750_ADDR 0x23
+#define BH1750_ADDR2 0x5C
+
+static BH1750_Option_t GlobalOption = {
+    .addr = BH1750_ADDR
+};
+
+void BH1750_getOption(void* args, JsonObject jsonOption) {
+    Sensor_t *self = (Sensor_t *) args;
+
+    if (jsonOption.containsKey("address")) {
+        GlobalOption.addr = I2CAddressCStringToInt(jsonOption["address"].as<const char*>());
+        if ((GlobalOption.addr != BH1750_ADDR) && (GlobalOption.addr != BH1750_ADDR2)) {
+            GlobalOption.addr = BH1750_ADDR;
+        }
+    }
+
+    self->option = &GlobalOption;
+}
 
 void BH1750_process(void* args) {
     // Sensor_t *self = (Sensor_t *) args;

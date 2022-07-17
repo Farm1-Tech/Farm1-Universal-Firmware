@@ -40,7 +40,9 @@ int Artron_SHT20::write(uint8_t command, uint8_t *data, uint8_t len) {
 }
 
 int Artron_SHT20::read(uint8_t command, uint8_t *data, int len, int stop) {
-  return I2CRead(SHT20_ADDR, &command, 1, data, len);
+    I2CWrite(SHT20_ADDR, &command, 1);
+    delay(stop);
+    return I2CRead(SHT20_ADDR, NULL, 0, data, len);
 }
 
 static Artron_SHT20 sht(&Wire);
@@ -68,10 +70,11 @@ SensorStatus_t SHT20_getValue(void* args, SensorType_t type, void* value) {
     
     if (!init_sht) {
         init_sht = sht.begin() ? true : false;
-    }
-
-    if (!init_sht) {
-        return INIT_FAIL;
+        if (init_sht) {
+            delay(10);
+        } else {
+            return INIT_FAIL;
+        }
     }
 
     float *value_f = (float *)value;

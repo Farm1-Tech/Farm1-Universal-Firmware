@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "Sensor/SensorDef.h"
 
+void JXBS_3001_TR_getOption(void*, JsonObject) ;
 void JXBS_3001_TR_process(void*) ;
 SensorStatus_t JXBS_3001_TR_getValue(void*, SensorType_t, void*) ;
 
@@ -17,6 +18,7 @@ static Sensor_t JXBS_3001_TR_Sensor = {
     .type = SOIL | TEMPERATURE,
     .option = NULL,
     .error = WORK_WELL,
+    .genOption = JXBS_3001_TR_getOption,
     .process = JXBS_3001_TR_process,
     .getValue = JXBS_3001_TR_getValue,
 };

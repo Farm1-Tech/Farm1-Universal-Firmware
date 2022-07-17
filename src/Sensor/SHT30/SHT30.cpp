@@ -5,6 +5,23 @@
 #define SHT30_ADDR2 0x45
 
 // --------
+static SHT30_Option_t GlobalOption = {
+    .addr = SHT30_ADDR
+};
+
+void SHT30_getOption(void* args, JsonObject jsonOption) {
+    Sensor_t *self = (Sensor_t *) args;
+
+    if (jsonOption.containsKey("address")) {\
+        GlobalOption.addr = I2CAddressCStringToInt(jsonOption["address"].as<const char*>());
+        if ((GlobalOption.addr != SHT30_ADDR) && (GlobalOption.addr != SHT30_ADDR2)) {
+            GlobalOption.addr = SHT30_ADDR;
+        }
+    }
+
+    self->option = &GlobalOption;
+}
+
 void SHT30_process(void* args) {
     // Sensor_t *self = (Sensor_t *) args;
 

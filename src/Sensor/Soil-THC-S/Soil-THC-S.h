@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "Sensor/SensorDef.h"
 
+void SOIL_THC_S_getOption(void*, JsonObject) ;
 void SOIL_THC_S_process(void*) ;
 SensorStatus_t SOIL_THC_S_getValue(void*, SensorType_t, void*) ;
 
@@ -17,6 +18,7 @@ static Sensor_t SOIL_THC_S_Sensor = {
     .type = SOIL,
     .option = NULL,
     .error = WORK_WELL,
+    .genOption = SOIL_THC_S_getOption,
     .process = SOIL_THC_S_process,
     .getValue = SOIL_THC_S_getValue,
 };

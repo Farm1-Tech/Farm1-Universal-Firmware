@@ -1,7 +1,28 @@
 #include "./Soil-THC-S.h"
 #include "Sensor/ModbusRTU.h"
 
-#define SOIL_THC_S_TR_DEFAULT_ID 1
+#define SOIL_THC_S_DEFAULT_ID 1
+
+static SOIL_THC_S_Option_t GlobalOption = {
+    .id = SOIL_THC_S_DEFAULT_ID,
+    .baudrate = 9600
+};
+
+void SOIL_THC_S_getOption(void* args, JsonObject jsonOption) {
+    Sensor_t *self = (Sensor_t *) args;
+
+    if (jsonOption.containsKey("id")) {
+        GlobalOption.id = jsonOption["id"].as<unsigned int>();
+        if ((GlobalOption.id <= 0) || (GlobalOption.id >= 255)) {
+            GlobalOption.id = SOIL_THC_S_DEFAULT_ID;
+        }
+    }
+    if (jsonOption.containsKey("baudrate")) {
+        GlobalOption.baudrate = jsonOption["baudrate"].as<unsigned long>();
+    }
+
+    self->option = &GlobalOption;
+}
 
 void SOIL_THC_S_process(void*) {
     // Sensor_t *self = (Sensor_t *) args;
@@ -12,7 +33,7 @@ SensorStatus_t SOIL_THC_S_getValue(void* args, SensorType_t type, void* value) {
     Sensor_t *self = (Sensor_t *) args;
 
     ModbusDeviceConfigs_t modbus_configs = {
-        .id = SOIL_THC_S_TR_DEFAULT_ID,
+        .id = SOIL_THC_S_DEFAULT_ID,
         .serial = {
             .baudrate = 4800,
             .config = SERIAL_8N1

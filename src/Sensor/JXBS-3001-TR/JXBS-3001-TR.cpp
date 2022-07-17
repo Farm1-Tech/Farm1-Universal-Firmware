@@ -3,6 +3,27 @@
 
 #define JXBS_3001_TR_DEFAULT_ID 1
 
+static JXBS_3001_TR_Option_t GlobalOption = {
+    .id = JXBS_3001_TR_DEFAULT_ID,
+    .baudrate = 9600
+};
+
+void JXBS_3001_TR_getOption(void* args, JsonObject jsonOption) {
+    Sensor_t *self = (Sensor_t *) args;
+
+    if (jsonOption.containsKey("id")) {
+        GlobalOption.id = jsonOption["id"].as<unsigned int>();
+        if ((GlobalOption.id <= 0) || (GlobalOption.id >= 255)) {
+            GlobalOption.id = JXBS_3001_TR_DEFAULT_ID;
+        }
+    }
+    if (jsonOption.containsKey("baudrate")) {
+        GlobalOption.baudrate = jsonOption["baudrate"].as<unsigned long>();
+    }
+
+    self->option = &GlobalOption;
+}
+
 void JXBS_3001_TR_process(void*) {
 
 }

@@ -1,7 +1,21 @@
 #include "./AnalogSoil.h"
-#include "../../Board/Board.h"
+#include "Board/Board.h"
 
-#define ANALOG_PIN ONBOARD_ANALOG0_PIN
+#define ANALOG_SOIL_DEFAULT_PIN ONBOARD_ANALOG0_PIN
+
+static AnalogSoil_Option_t GlobalOption = {
+    .pin = ANALOG_SOIL_DEFAULT_PIN
+};
+
+void  AnalogSoil_getOption(void* args, JsonObject jsonOption) {
+    Sensor_t *self = (Sensor_t *) args;
+
+    if (jsonOption.containsKey("pin")) {
+        GlobalOption.pin = jsonOption["pin"].as<unsigned int>();
+    }
+
+    self->option = &GlobalOption;
+}
 
 void AnalogSoil_process(void* args) {
 
@@ -10,7 +24,7 @@ void AnalogSoil_process(void* args) {
 SensorStatus_t AnalogSoil_getValue(void* args, SensorType_t type, void* value) {
     Sensor_t *self = (Sensor_t *) args;
 
-    uint8_t pin = ANALOG_PIN;
+    uint8_t pin = ANALOG_SOIL_DEFAULT_PIN;
     uint16_t min = 0;
     uint16_t max = 4095;
     if (self->option) {

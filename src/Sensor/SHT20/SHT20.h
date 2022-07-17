@@ -33,6 +33,7 @@ static Sensor_t SHT20_Sensor = {
     .type = TEMPERATURE | HUMIDITY,
     .option = NULL,
     .error = WORK_WELL,
+    .genOption = NULL,
     .process = SHT20_process,
     .getValue = SHT20_getValue,
 };

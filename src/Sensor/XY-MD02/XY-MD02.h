@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "Sensor/SensorDef.h"
 
+void XY_MD02_getOption(void*, JsonObject) ;
 void XY_MD02_process(void*) ;
 SensorStatus_t XY_MD02_getValue(void*, SensorType_t, void*) ;
 
@@ -17,6 +18,7 @@ static Sensor_t XY_MD02_Sensor = {
     .type = TEMPERATURE | HUMIDITY,
     .option = NULL,
     .error = WORK_WELL,
+    .genOption = XY_MD02_getOption,
     .process = XY_MD02_process,
     .getValue = XY_MD02_getValue,
 };

@@ -33,6 +33,9 @@ SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
     if (sensor_select.containsKey("type")) {
         for (uint8_t i=0;i<Sensor_length;i++) {
             if (sensor_select["type"].as<String>().equals(Sensor[i].id)) {
+                if (sensor_select.containsKey("option") && Sensor[i].genOption) {
+                    Sensor[i].genOption((void*)&Sensor[i], sensor_select["option"].as<JsonObject>());
+                }
                 return Sensor[i].getValue((void*)&Sensor[i], type, value);
             }
         }

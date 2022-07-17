@@ -56,3 +56,11 @@ int I2CRead(uint8_t addr, uint8_t *writeData, uint8_t writeLen, uint8_t *readDat
 
   return n == readLen ? 0 : -1;
 }
+
+int I2CAddressCStringToInt(const char* str) {
+  unsigned int addr = 0;
+  if (str && strlen(str) > 2) {
+    sscanf(str, "0x%X", &addr);
+  }
+  return addr;
+}

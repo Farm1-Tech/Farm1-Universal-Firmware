@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Arduino.h"
+#include "ArduinoJson.h"
 #include <functional>
 
 enum SensorType_t {
@@ -18,6 +19,7 @@ enum SensorStatus_t {
     TYPE_NOT_SUPPORT = -4,
 };
 
+typedef std::function<void(void*, JsonObject)> TGenOptionHandlerFunction;
 typedef std::function<void(void*)> TProcessHandlerFunction;
 typedef std::function<SensorStatus_t(void*, SensorType_t, void*)> TGetValueHandlerFunction;
 
@@ -26,7 +28,7 @@ typedef struct {
     uint32_t type;
     void *option;
     SensorStatus_t error;
+    TGenOptionHandlerFunction genOption;
     TProcessHandlerFunction process;
     TGetValueHandlerFunction getValue;
 } Sensor_t;
-
