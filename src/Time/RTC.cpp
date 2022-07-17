@@ -24,15 +24,15 @@ static uint8_t type = DS1338;
 bool RTC_init() {
     if (CheckI2CDevice(DS1338)) {
         type = DS1338;
-        Serial.println("RTC chip found DS1338");
+        // Serial.println("RTC chip found DS1338");
     } else if (CheckI2CDevice(MCP79411)) {
         type = MCP79411;
-        Serial.println("RTC chip found MCP79411");
+        // Serial.println("RTC chip found MCP79411");
     } else if (CheckI2CDevice(PCF8563)) {
         type = PCF8563;
-        Serial.println("RTC chip found PCF8563");
+        // Serial.println("RTC chip found PCF8563");
     } else {
-        Serial.println("Error, Not found RTC device");
+        // Serial.println("Error, Not found RTC device");
         return false;
     }
 
