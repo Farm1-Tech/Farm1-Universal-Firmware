@@ -4,7 +4,7 @@
 static uint8_t on_board_output_pin[ONBOARD_RELAY_NUM] = ONBOARD_RELAY_PIN;
 
 OutputStatus_t OnBoard_setValue(void* args, int ch, bool value) {
-    if (ch >= ONBOARD_RELAY_NUM) {
+    if ((ch < 0) || (ch >= ONBOARD_RELAY_NUM)) {
         return OUTPUT_CH_INVALID;
     }
 
@@ -13,7 +13,7 @@ OutputStatus_t OnBoard_setValue(void* args, int ch, bool value) {
 }
 
 OutputStatus_t OnBoard_getValue(void* args, int ch, bool* value) {
-    if (ch >= ONBOARD_RELAY_NUM) {
+    if ((ch < 0) || (ch >= ONBOARD_RELAY_NUM)) {
         return OUTPUT_CH_INVALID;
     }
 
