@@ -1,3 +1,6 @@
+// Board Info
+#define BOARD_NAME "Farm1"
+
 // Onboard LED
 #define NET_LED_PIN 0
 
