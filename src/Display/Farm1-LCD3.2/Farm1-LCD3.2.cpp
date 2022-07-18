@@ -49,27 +49,19 @@ static void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t
 
 static void updateSensorValueTask(lv_task_t*) {
     float temp;
-    Sensor_getValueOne(TEMPERATURE, &temp);
-
-    float humidity;
-    Sensor_getValueOne(HUMIDITY, &humidity);
-
-    float soil;
-    Sensor_getValueOne(SOIL, &soil);
-
-    float light;
-    Sensor_getValueOne(AMBIENT_LIGHT, &light);
-
-    lv_label_set_text(txtTemp, String(temp, 1).c_str());
+    lv_label_set_text(txtTemp, Sensor_getValueOne(TEMPERATURE, (void*) &temp) == WORK_WELL ? String(temp, 1).c_str() : "");
     lv_obj_align(txtTemp, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -30, -37);
 
-    lv_label_set_text(txtHumi, String(humidity, 1).c_str());
+    float humidity;
+    lv_label_set_text(txtHumi, Sensor_getValueOne(HUMIDITY, (void*) &humidity) == WORK_WELL ? String(humidity, 1).c_str() : "");
     lv_obj_align(txtHumi, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -23, -38);
 
-    lv_label_set_text(txtHumi2, String(soil, 1).c_str());
+    float soil;
+    lv_label_set_text(txtHumi2, Sensor_getValueOne(SOIL, (void*) &soil) == WORK_WELL ? String(soil, 1).c_str() : "");
     lv_obj_align(txtHumi2, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -24, -38);
 
-    lv_label_set_text(txtLight, String(light, 1).c_str());
+    float light;
+    lv_label_set_text(txtLight, Sensor_getValueOne(AMBIENT_LIGHT, (void*) &light) ? String(light / 1000.0f, 1).c_str() : "");
     lv_obj_align(txtLight, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -47, -38); 
 }
 
