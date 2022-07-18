@@ -7,6 +7,7 @@
  - [x] ตั้งค่าเชื่อมต่อ WiFi ผ่าน Smart Configs
  - [x] REST API
  - [ ] ใช้งานแบบ Offline
+ - [ ] Event Triger
 
 ## อุปกรณ์ที่รองรับ
 
