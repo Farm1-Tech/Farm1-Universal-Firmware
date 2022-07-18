@@ -29,6 +29,7 @@ void REST_API_init() {
         jsonDoc["device"] = GlobalConfigs["device"].as<JsonObject>();
         jsonDoc["cloud"] = GlobalConfigs["cloud"].as<JsonObject>();
         serializeJsonPretty(jsonDoc, *response);
+        serializeJsonPretty(GlobalConfigs, Serial);
         request->send(response);
     });
 
@@ -37,8 +38,9 @@ void REST_API_init() {
             JsonObject jsonPost = json.as<JsonObject>();
             GlobalConfigs["device"] = jsonPost["device"].as<JsonObject>();
             GlobalConfigs["cloud"] = jsonPost["cloud"].as<JsonObject>();
+            serializeJsonPretty(GlobalConfigs, Serial);
             StorageConfigs_save();
             request->send(200, "text/plain", "OK");
         }
-    }));
+    }, 4 * 1024));
 }
