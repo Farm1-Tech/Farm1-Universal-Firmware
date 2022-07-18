@@ -4,6 +4,7 @@
 #include "ArduinoJson.h"
 #include <functional>
 
+#define SENSOR_TYPE_NUM 4
 enum SensorType_t {
     TEMPERATURE   = 1 << 0,
     HUMIDITY      = 1 << 1,
