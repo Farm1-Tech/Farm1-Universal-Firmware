@@ -1,10 +1,8 @@
 #include "Arduino.h"
 #include "./ModbusRTU.h"
+#include "Board/Board.h"
 
 #define RS485_CH_NUM 2
-#define RS485_RX_PIN 28
-#define RS485_TX_PIN 29
-#define RS485_DIR_PIN 4
 
 HardwareSerial RS485(RS485_CH_NUM);
 

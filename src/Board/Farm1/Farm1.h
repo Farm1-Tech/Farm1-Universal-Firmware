@@ -20,6 +20,11 @@
 #define I2C_SDA_PIN 21
 #define I2C_SCL_PIN 22
 
+// Onboard RS485
+#define RS485_RX_PIN 4
+#define RS485_TX_PIN 15
+#define RS485_DIR_PIN 2
+
 // Configs button
 #define CONFIGS_BUTTON_PIN 0
 #define CONFIGS_BUTTON_ACTIVE LOW
