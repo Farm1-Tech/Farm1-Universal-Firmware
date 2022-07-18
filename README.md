@@ -5,14 +5,14 @@
 ## ฟีเจอร์
 
  - [x] ตั้งค่าเชื่อมต่อ WiFi ผ่าน Smart Configs
- - [ ] REST API
+ - [x] REST API
  - [ ] ใช้งานแบบ Offline
 
 ## อุปกรณ์ที่รองรับ
 
 ### เซ็นเซอร์อุณหภูมิอากาศ
 
- - [ ] SHT20 (I2C)
+ - [x] SHT20 (I2C)
  - [ ] SHT30 (I2C)
  - [ ] XY-MD02 (RS485/Modbus RTU)
  - [ ] DHT22 (IO)
@@ -41,7 +41,7 @@
 
 ### จอแสดงผล
 
- - [ ] Farm1-LCD3.2 (TFT LCD 3.2 inch, SPI)
+ - [x] Farm1-LCD3.2 (TFT LCD 3.2 inch, SPI)
  - [ ] 20x4 Character LCD (I2C)
 
 ## Cloud Service
