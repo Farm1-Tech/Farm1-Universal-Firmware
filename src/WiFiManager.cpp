@@ -10,7 +10,7 @@ static void WiFiEvent(WiFiEvent_t event){
         case SYSTEM_EVENT_STA_STOP:
         case SYSTEM_EVENT_STA_DISCONNECTED:
         case SYSTEM_EVENT_STA_LOST_IP:
-            Serial.println("WiFi Disconnect");
+            // Serial.println("WiFi Disconnect");
             wifi_force_disconnect = true;
             WiFi.removeEvent(WiFiEvent);
             break;
@@ -25,7 +25,7 @@ void WiFiManager_process() {
     if (state == 0) {
         if (!WiFi.isConnected()) {
             if (GlobalConfigs.containsKey("wifi") && GlobalConfigs["wifi"].containsKey("ssid") && GlobalConfigs["wifi"].containsKey("password")) {
-                Serial.println("Reconnect WiFi");
+                // Serial.println("Reconnect WiFi");
                 WiFi.onEvent(WiFiEvent);
                 WiFi.begin(
                     GlobalConfigs["wifi"]["ssid"].as<const char*>(),
@@ -38,11 +38,13 @@ void WiFiManager_process() {
         if (WiFi.isConnected()) {
             WiFi.removeEvent(WiFiEvent);
             
+            /*
             Serial.print("WiFi connected, IP: ");
             Serial.print(WiFi.localIP());
             Serial.print("\tSSID: ");
             Serial.print(WiFi.SSID());
             Serial.println();
+            */
 
             if (!GlobalConfigs["wifi"]["ssid"].as<String>().equals(WiFi.SSID())) {
                 GlobalConfigs["wifi"]["ssid"] = WiFi.SSID();

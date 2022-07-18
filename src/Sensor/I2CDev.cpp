@@ -28,7 +28,7 @@ int I2CWrite(uint8_t addr, uint8_t *data, uint8_t len, bool stop) {
   xSemaphoreGive(I2CSemaphore);
 
   if (res != 0) {
-    Serial.printf("I2C [0x%02X] write Error code %d\n", addr, res);
+    // Serial.printf("I2C [0x%02X] write Error code %d\n", addr, res);
   }
 
   return res;
@@ -49,7 +49,7 @@ int I2CRead(uint8_t addr, uint8_t *writeData, uint8_t writeLen, uint8_t *readDat
   Wire.readBytes(readData, n);
 
   if (n != readLen) {
-    Serial.printf("I2C [0x%02X] read error\n", addr);
+    // Serial.printf("I2C [0x%02X] read error\n", addr);
   }
 
   xSemaphoreGive(I2CSemaphore);
