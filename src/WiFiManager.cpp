@@ -46,6 +46,7 @@ void WiFiManager_process() {
             Serial.println();
             */
 
+            /*
             if (!GlobalConfigs["wifi"]["ssid"].as<String>().equals(WiFi.SSID())) {
                 GlobalConfigs["wifi"]["ssid"] = WiFi.SSID();
                 GlobalConfigs["wifi"]["password"] = WiFi.psk();
@@ -56,7 +57,9 @@ void WiFiManager_process() {
                     Serial.println("Save configs fail !");
                 }
             }
-                
+            */
+            
+            digitalWrite(NET_LED_PIN, LOW);
             state = 0;
         } else if (wifi_force_disconnect) {
             WiFi.disconnect();
