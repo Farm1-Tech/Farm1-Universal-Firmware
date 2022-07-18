@@ -90,23 +90,21 @@ void HandySense_process(void* args) {
         state = 1;
     }
     if (state == 1) { // Wait WiFi connect
-        if (WiFi.isConnected()) {
+        JsonObject connectionInfo = GlobalConfigs["handysense"]["connection"].as<JsonObject>();
+        if (
+            WiFi.isConnected() &&
+            !connectionInfo.isNull() &&
+            !connectionInfo["server"].isNull() &&
+            !connectionInfo["port"].isNull() &&
+            !connectionInfo["client"].isNull() &&
+            !connectionInfo["user"].isNull() &&
+            !connectionInfo["pass"].isNull()
+        ) {
             state = 2;
         }
     }
     if (state == 2) { // Connect
         JsonObject connectionInfo = GlobalConfigs["handysense"]["connection"].as<JsonObject>();
-        if (
-            !connectionInfo.isNull() ||
-            !connectionInfo.containsKey("server") ||
-            !connectionInfo.containsKey("port") ||
-            !connectionInfo.containsKey("client") ||
-            !connectionInfo.containsKey("user") ||
-            !connectionInfo.containsKey("pass")
-        ) {
-            return;
-        }
-
         const char *server = connectionInfo["server"].as<const char*>();
         const int port = connectionInfo["port"].as<int>();
         const char *client_id = connectionInfo["client"].as<const char*>();
@@ -114,6 +112,7 @@ void HandySense_process(void* args) {
         const char *password = connectionInfo["pass"].as<const char*>();
 
         client->setServer(server, port);
+        client->setSocketTimeout(2);
         if (client->connect(client_id, username, password)) { // Connected
             client->subscribe("@private/#");
 
@@ -129,46 +128,33 @@ void HandySense_process(void* args) {
         if (!client->connected()) {
             Serial.println("NETPIE connection lost");
             state = 1;
-            return;
-        }
+        } else {
+            static uint64_t last_send_sensor = 0;
+            if ((last_send_sensor == 0) || ((millis() - last_send_sensor) > DATA_SEND_INTERVAL_MS)) {
+                float tempC = 20.3;
+                float humiRH = 10.3;
+                float lightKLUX = 58.1;
+                float soilPERCENT = 80.3;
 
-        static uint64_t last_send_sensor = 0;
-        if ((last_send_sensor == 0) || ((millis() - last_send_sensor) > DATA_SEND_INTERVAL_MS)) {
-            float tempC = 20.3;
-            float humiRH = 10.3;
-            float lightKLUX = 58.1;
-            float soilPERCENT = 80.3;
+                // Read real data from sensor
+                Sensor_getValueOne(TEMPERATURE, (void*) &tempC);
+                Sensor_getValueOne(HUMIDITY, (void*) &humiRH);
+                Sensor_getValueOne(AMBIENT_LIGHT, (void*) &lightKLUX);
+                Sensor_getValueOne(SOIL, (void*) &soilPERCENT);
+                // ---------
 
-            // Read real data from sensor
-            Sensor_getValueOne(TEMPERATURE, (void*) &tempC);
-            Sensor_getValueOne(HUMIDITY, (void*) &humiRH);
-            Sensor_getValueOne(AMBIENT_LIGHT, (void*) &lightKLUX);
-            Sensor_getValueOne(SOIL, (void*) &soilPERCENT);
-            // ---------
-
-            char buff[256];
-            memset(buff, 0, sizeof(buff));
-            sprintf(
-                buff,
-                "{\"data\": {\"temperature\": %.2f,\"humidity\": %.2f,\"lux\": %.2f,\"soil\": %.2f}}",
-                tempC, humiRH, lightKLUX, soilPERCENT
-            );
-            if (client->publish("@shadow/data/update", buff)) {
-                last_send_sensor = millis();
-            } else {
-                Serial.println("Send data to NETPIE fail");
-                state = 99;
-            }
-        } else if (state == 99) {
-            static int sub_state = 0;
-            static uint64_t start_stop = 0;
-            if (sub_state == 0) {
-                start_stop = millis();
-                sub_state = 1;
-            } else if (sub_state == 1) {
-                if ((millis() - start_stop) > 2000) { // Stop 2 sec
-                    sub_state = 0;
-                    state = 3;
+                char buff[256];
+                memset(buff, 0, sizeof(buff));
+                sprintf(
+                    buff,
+                    "{\"data\": {\"temperature\": %.2f,\"humidity\": %.2f,\"lux\": %.2f,\"soil\": %.2f}}",
+                    tempC, humiRH, lightKLUX, soilPERCENT
+                );
+                if (client->publish("@shadow/data/update", buff)) {
+                    last_send_sensor = millis();
+                } else {
+                    Serial.println("Send data to NETPIE fail");
+                    state = 99;
                 }
             }
         }
@@ -254,6 +240,19 @@ void HandySense_process(void* args) {
             } else {
                 Serial.println("Send data to NETPIE fail");
                 state = 1; // Go back to check WiFi and reconnect
+            }
+        }
+    }
+    if (state == 99) {
+        static int sub_state = 0;
+        static uint64_t start_stop = 0;
+        if (sub_state == 0) {
+            start_stop = millis();
+            sub_state = 1;
+        } else if (sub_state == 1) {
+            if ((millis() - start_stop) > 2000) { // Stop 2 sec
+                sub_state = 0;
+                state = 3;
             }
         }
     }
