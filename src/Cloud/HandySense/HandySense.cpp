@@ -148,7 +148,7 @@ void HandySense_process(void* args) {
                 sprintf(
                     buff,
                     "{\"data\": {\"temperature\": %.2f,\"humidity\": %.2f,\"lux\": %.2f,\"soil\": %.2f}}",
-                    tempC, humiRH, lightKLUX, soilPERCENT
+                    tempC, humiRH, lightKLUX / 1000.0f, soilPERCENT
                 );
                 if (client->publish("@shadow/data/update", buff)) {
                     last_send_sensor = millis();
