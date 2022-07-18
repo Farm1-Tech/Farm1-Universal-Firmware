@@ -15,6 +15,9 @@
 #define MAX_PRESS_TIME (5 * 1000)
 
 bool CheckButtonEnterToConfigsMode() {
+#ifdef BOARD_FARM1
+    bool state_of_output = digitalRead(CONFIGS_BUTTON_PIN);
+#endif
     pinMode(CONFIGS_BUTTON_PIN, INPUT);
 #ifdef BOARD_FARM1
     delay(10); // wait signal level up by R-pullup and stable
@@ -22,6 +25,7 @@ bool CheckButtonEnterToConfigsMode() {
     bool configs_button_is_pressed = digitalRead(CONFIGS_BUTTON_PIN) == CONFIGS_BUTTON_ACTIVE;
 #ifdef BOARD_FARM1
     pinMode(CONFIGS_BUTTON_PIN, OUTPUT_OPEN_DRAIN);
+    digitalWrite(CONFIGS_BUTTON_PIN, state_of_output);
 #endif
     static int state = 0;
     static uint64_t start_press_ms = 0;
@@ -75,7 +79,6 @@ void loop() {
     if (!modeConfig) {
         WiFiManager_process();
         Cloud[0].process((void*)&Cloud[0]);
-        Display_process();
         if (CheckButtonEnterToConfigsMode()) {
             modeConfig = true;
             Serial.println("Enter to config mode");
@@ -86,6 +89,7 @@ void loop() {
             Serial.println("Exit config mode");
         }
     }
+    Display_process();
     
     /*
     static uint32_t last_print = 0;
