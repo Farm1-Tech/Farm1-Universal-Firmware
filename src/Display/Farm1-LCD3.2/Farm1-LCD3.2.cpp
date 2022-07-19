@@ -61,7 +61,7 @@ static void updateSensorValueTask(lv_task_t*) {
     lv_obj_align(txtHumi2, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -24, -38);
 
     float light;
-    lv_label_set_text(txtLight, Sensor_getValueOne(AMBIENT_LIGHT, (void*) &light) ? String(light / 1000.0f, 1).c_str() : "");
+    lv_label_set_text(txtLight, Sensor_getValueOne(AMBIENT_LIGHT, (void*) &light) == WORK_WELL ? String(light / 1000.0f, 1).c_str() : "");
     lv_obj_align(txtLight, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, -47, -38); 
 }
 
