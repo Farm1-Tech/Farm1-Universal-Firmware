@@ -8,6 +8,7 @@ OutputStatus_t OnBoard_setValue(void* args, int ch, bool value) {
         return OUTPUT_CH_INVALID;
     }
 
+    pinMode(on_board_output_pin[ch], OUTPUT);
     digitalWrite(on_board_output_pin[ch], value ? ONBOARD_RELAY_ACTIVE : !ONBOARD_RELAY_ACTIVE);
     return OUTPUT_WORK_WELL;
 }

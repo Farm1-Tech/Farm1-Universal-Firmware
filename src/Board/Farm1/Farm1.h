@@ -12,6 +12,7 @@
 // Onboard input digital
 #define ONBOARD_INPUT_NUM 2
 #define ONBOARD_INPUT_PIN { 34, 35 }
+#define ONBOARD_INPUT_ACTIVE LOW
 
 // Onboard analog
 #define ONBOARD_ANALOG_NUM 2

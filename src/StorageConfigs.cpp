@@ -4,7 +4,7 @@
 
 #define GLOBAL_FILE_CONFIGS "/configs.json"
 
-DynamicJsonDocument GlobalConfigs(32 * 1024);
+StaticJsonDocument <CONFIG_BUFFER_SIZE>GlobalConfigs;
 
 static bool fileWrite(String fileName, String content) {
   File file = SPIFFS.open(fileName, FILE_WRITE);

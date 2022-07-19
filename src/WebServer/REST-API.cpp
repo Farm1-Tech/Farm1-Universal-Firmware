@@ -10,12 +10,14 @@
 #include "Sensor/Sensor.h"
 #include "Output/Output.h"
 
+static StaticJsonDocument <4 * 1024>jsonDoc;
+
 void REST_API_init() {
     // Device Info
     server.on("/api/info", HTTP_GET, [] (AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         response->setCode(200);
-        DynamicJsonDocument jsonDoc(1 * 1024);
+        jsonDoc.clear();
         jsonDoc["sku"] = BOARD_NAME;
         jsonDoc["mac_address"] = String(WiFi.BSSIDstr());
         jsonDoc["uptime"] = millis();
@@ -29,7 +31,7 @@ void REST_API_init() {
     server.on("/api/configs", HTTP_GET, [] (AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         response->setCode(200);
-        DynamicJsonDocument jsonDoc(8 * 1024);
+        jsonDoc.clear();
         jsonDoc["device"] = GlobalConfigs["device"].as<JsonObject>();
         jsonDoc["cloud"] = GlobalConfigs["cloud"].as<JsonObject>();
         serializeJsonPretty(jsonDoc, *response);
@@ -52,8 +54,9 @@ void REST_API_init() {
     server.on("/api/io", HTTP_GET, [] (AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         response->setCode(200);
-        DynamicJsonDocument jsonDoc(2 * 1024);
-        
+
+        jsonDoc.clear();
+
         // Sensor
         jsonDoc["sensor"]["temperature"] = (char*)NULL;
         jsonDoc["sensor"]["humidity"] = (char*)NULL;
@@ -84,7 +87,7 @@ void REST_API_init() {
         JsonArray output = jsonDoc.createNestedArray("output");
         for (uint8_t i=0;i<4;i++) {
             bool output_status;
-            if (Output_getValueOne(0, &output_status) == OUTPUT_WORK_WELL) {
+            if (Output_getValueOne(i, &output_status) == OUTPUT_WORK_WELL) {
                 output.add(output_status ? 1 : 0);
             } else {
                 output.add((char*)NULL);
@@ -94,9 +97,10 @@ void REST_API_init() {
         // Input
 #ifdef BOARD_FARM1
         JsonArray input = jsonDoc.createNestedArray("input");
-        uint8_t input_pin[] = ONBOARD_INPUT_PIN;
+        uint8_t input_pin[ONBOARD_INPUT_NUM] = ONBOARD_INPUT_PIN;
         for (uint8_t i=0;i<ONBOARD_INPUT_NUM;i++) {
-            input.add(digitalRead(input_pin[i]));
+            pinMode(input_pin[i], INPUT_PULLUP);
+            input.add(digitalRead(input_pin[i]) == ONBOARD_INPUT_ACTIVE ? 1 : 0);
         }
 #endif
 
@@ -111,7 +115,11 @@ void REST_API_init() {
                 JsonArray output_set = json["output"].as<JsonArray>();
                 uint8_t index = 0;
                 for (JsonArray::iterator it=output_set.begin(); it!=output_set.end(); ++it) {
-                    Output_setValueOne(index++, it->as<int>() == 1);
+                    int value = it->as<int>();
+                    if (Output_setValueOne(index, value == 1) != OUTPUT_WORK_WELL) {
+                        Serial.printf("Output %d write error", index);
+                    }
+                    index++;
                 }
             } else {
                 request->send(400, "text/plain", "object 'output' not array");
@@ -121,12 +129,12 @@ void REST_API_init() {
             // Get
             AsyncResponseStream *response = request->beginResponseStream("application/json");
             response->setCode(200);
-            DynamicJsonDocument jsonDoc(1 * 1024);
 
+            jsonDoc.clear();
             JsonArray output = jsonDoc.createNestedArray("output");
             for (uint8_t i=0;i<4;i++) {
-                bool output_status;
-                if (Output_getValueOne(0, &output_status) == OUTPUT_WORK_WELL) {
+                bool output_status = false;
+                if (Output_getValueOne(i, &output_status) == OUTPUT_WORK_WELL) {
                     output.add(output_status ? 1 : 0);
                 } else {
                     output.add((char*)NULL);
