@@ -99,13 +99,14 @@ SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
                 delay(50);
             }
         }
+    } else {
+        Serial.println("Sensor type not support");
     }
 
     last_value[type_index] = *value_f;
     last_status[type_index] = res;
     last_value_update_time[type_index] = millis();
     
-    Serial.println("Sensor type not support");
     return res;
 } 
 
