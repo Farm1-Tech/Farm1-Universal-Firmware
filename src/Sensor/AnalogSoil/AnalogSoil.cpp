@@ -3,8 +3,14 @@
 
 #define ANALOG_SOIL_DEFAULT_PIN ONBOARD_ANALOG0_PIN
 
+static float map_f(float x, float in_min, float in_max, float out_min, float out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 static AnalogSoil_Option_t GlobalOption = {
-    .pin = ANALOG_SOIL_DEFAULT_PIN
+    .pin = ANALOG_SOIL_DEFAULT_PIN,
+    .min = 0,
+    .max = 4095
 };
 
 void  AnalogSoil_getOption(void* args, JsonObject jsonOption) {
@@ -12,6 +18,14 @@ void  AnalogSoil_getOption(void* args, JsonObject jsonOption) {
 
     if (jsonOption.containsKey("pin")) {
         GlobalOption.pin = jsonOption["pin"].as<unsigned int>();
+    }
+
+    if (jsonOption.containsKey("min")) {
+        GlobalOption.min = jsonOption["min"].as<unsigned int>();
+    }
+
+    if (jsonOption.containsKey("max")) {
+        GlobalOption.max = jsonOption["max"].as<unsigned int>();
     }
 
     self->option = &GlobalOption;
@@ -36,7 +50,7 @@ SensorStatus_t AnalogSoil_getValue(void* args, SensorType_t type, void* value) {
 
     float *value_f = (float *)value;
     if (type == SOIL) {
-        *value_f = map(analogRead(pin), 0, 4095, min, max);
+        *value_f = map_f(analogRead(pin), 0, 4095, min, max);
         return WORK_WELL;
     }
 
