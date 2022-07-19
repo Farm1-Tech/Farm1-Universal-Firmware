@@ -47,6 +47,10 @@ void REST_API_init() {
             serializeJsonPretty(GlobalConfigs, Serial);
             StorageConfigs_save();
             request->send(200, "text/plain", "OK");
+            
+            // Fixed bug
+            delay(50);
+            StorageConfigs_load();
         }
     }, 8 * 1024));
 

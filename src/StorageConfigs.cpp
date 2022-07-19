@@ -33,6 +33,7 @@ static String fileRead(String fileName) {
 bool StorageConfigs_load() {
     String configsContentText = fileRead(GLOBAL_FILE_CONFIGS);
     // Serial.println(configsContentText);
+    GlobalConfigs.clear();
     if (deserializeJson(GlobalConfigs, configsContentText) != DeserializationError::Ok) {
         Serial.println("Load configs error");
         return false;
