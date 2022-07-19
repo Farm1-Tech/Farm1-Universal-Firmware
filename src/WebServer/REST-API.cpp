@@ -29,7 +29,7 @@ void REST_API_init() {
     server.on("/api/configs", HTTP_GET, [] (AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         response->setCode(200);
-        DynamicJsonDocument jsonDoc(4 * 1024);
+        DynamicJsonDocument jsonDoc(8 * 1024);
         jsonDoc["device"] = GlobalConfigs["device"].as<JsonObject>();
         jsonDoc["cloud"] = GlobalConfigs["cloud"].as<JsonObject>();
         serializeJsonPretty(jsonDoc, *response);
@@ -46,7 +46,7 @@ void REST_API_init() {
             StorageConfigs_save();
             request->send(200, "text/plain", "OK");
         }
-    }, 4 * 1024));
+    }, 8 * 1024));
 
     // Direct I/O control
     server.on("/api/io", HTTP_GET, [] (AsyncWebServerRequest *request) {
