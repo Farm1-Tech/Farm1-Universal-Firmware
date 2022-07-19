@@ -78,7 +78,7 @@ void loop() {
     static bool modeConfig = false;
     if (!modeConfig) {
         WiFiManager_process();
-        Cloud[0].process((void*)&Cloud[0]);
+        Cloud_process();
         if (CheckButtonEnterToConfigsMode()) {
             modeConfig = true;
             Serial.println("Enter to config mode");
