@@ -89,7 +89,7 @@ SensorStatus_t SHT20_getValue(void* args, SensorType_t type, void* value) {
     if (*value_f == -999.0f) {
         init_sht = false;
         return READ_FAIL;
-    } else {
+    } else if ((type & (TEMPERATURE | HUMIDITY)) != 0) {
         return WORK_WELL;
     }
 
