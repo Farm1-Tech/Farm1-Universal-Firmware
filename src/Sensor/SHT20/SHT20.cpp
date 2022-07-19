@@ -80,17 +80,17 @@ SensorStatus_t SHT20_getValue(void* args, SensorType_t type, void* value) {
     float *value_f = (float *)value;
     if (type == TEMPERATURE) {
         *value_f = sht.readTemperature();
-        return WORK_WELL;
     }
 
     if (type == HUMIDITY) {
         *value_f = sht.readHumidity();
-        return WORK_WELL;
     }
 
-    if (*value_f == -999) {
+    if (*value_f == -999.0f) {
         init_sht = false;
         return READ_FAIL;
+    } else {
+        return WORK_WELL;
     }
 
     return TYPE_NOT_SUPPORT;
