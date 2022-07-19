@@ -49,7 +49,10 @@ SensorStatus_t JXBS_3001_TR_getValue(void* args, SensorType_t type, void* value)
 #define READ_TYPE_FROM_MODBUS(TYPE_OF_READ, REGISTER) ({ \
     if (type == TYPE_OF_READ) { \
         uint8_t buff[2]; \
-        ModbudRTUReadInputRegister(modbus_configs, REGISTER, 1, buff); \
+        if (ModbudRTUReadHoldingRegister(modbus_configs, REGISTER, 1, buff) != MODBUS_OK) { \
+            *value_f = -999.0; \
+            return READ_FAIL; \
+        } \
         *value_f = ((uint16_t)(buff[0] << 8) | buff[1]) / 10.0f; \
         return WORK_WELL; \
     } \

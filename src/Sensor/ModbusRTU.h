@@ -4,9 +4,9 @@
 
 enum ModbusRTUStatus_t {
   MODBUS_OK = 0,
-  ERROR_TIMEOUT = -1,
-  ERROR_INVALID_PACKET = -2,
-  ERROR_CRC_CHECK = -3,
+  MODBUS_ERROR_TIMEOUT = -1,
+  MODBUS_ERROR_INVALID_PACKET = -2,
+  MODBUS_ERROR_CRC_CHECK = -3,
 };
 
 typedef struct {
@@ -19,4 +19,5 @@ typedef struct {
   ModbusSerialConfigs_t serial;
 } ModbusDeviceConfigs_t;
 
+ModbusRTUStatus_t ModbudRTUReadHoldingRegister(ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) ;
 ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) ;

@@ -9,7 +9,7 @@ HardwareSerial RS485(RS485_CH_NUM);
 #define MODE_SEND HIGH
 #define MODE_RECV LOW
 
-uint16_t CRC16(uint8_t *buf, int len) {
+static uint16_t CRC16(uint8_t *buf, int len) {
 	uint16_t crc = 0xFFFF;
 	for (uint16_t pos = 0; pos < len; pos++) {
 		crc ^= (uint16_t)buf[pos]; // XOR byte into least sig. byte of crc
@@ -29,8 +29,8 @@ uint16_t CRC16(uint8_t *buf, int len) {
 	return crc;
 }
 
-ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) {
-    pinMode(RS485_DIR_PIN, OUTPUT);
+static ModbusRTUStatus_t ModbudRTUReadRegister(uint8_t functionCode, ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) {
+	pinMode(RS485_DIR_PIN, OUTPUT);
 	digitalWrite(RS485_DIR_PIN, MODE_RECV);
 
 	RS485.begin(configs.serial.baudrate, configs.serial.config, RS485_RX_PIN, RS485_TX_PIN); // Rx, Tx
@@ -38,7 +38,7 @@ ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint
 
 	uint8_t buff[] = {
 		configs.id, // Devices Address
-		0x04, // Function code
+		functionCode, // Function code
 		(uint8_t)(start_address >> 8), // Start Address HIGH
 		(uint8_t)(start_address & 0xFF), // 0x01, // Start Address LOW
 		0x00, // Quantity HIGH
@@ -61,30 +61,38 @@ ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint
     uint8_t read_len = RS485.readBytes(buff_read, read_byte_count);
     if (read_len == 0) {
         Serial.println("ERROR Timeout");
-        return ERROR_TIMEOUT;
+        return MODBUS_ERROR_TIMEOUT;
     }
 
 	if (read_len != read_byte_count) {
         Serial.println("ERROR read size");
-        return ERROR_INVALID_PACKET;
+        return MODBUS_ERROR_INVALID_PACKET;
     }
 
     if (buff_read[0] != configs.id) {
         Serial.println("ERROR device id");
-        return ERROR_INVALID_PACKET;
+        return MODBUS_ERROR_INVALID_PACKET;
     }
 
-	if (buff_read[1] != 0x04) {
+	if (buff_read[1] != functionCode) {
         Serial.println("ERROR function code");
-        return ERROR_INVALID_PACKET;
+        return MODBUS_ERROR_INVALID_PACKET;
     }
 
 	if (buff_read[2] != (len * 2)) {
         Serial.println("ERROR byte count");
-        return ERROR_INVALID_PACKET;
+        return MODBUS_ERROR_INVALID_PACKET;
     }
 
 	memcpy(data, &buff_read[3], len * 2);
 
 	return MODBUS_OK;
+}
+
+ModbusRTUStatus_t ModbudRTUReadHoldingRegister(ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) {
+    return ModbudRTUReadRegister(0x03, configs, start_address, len, data);
+}
+
+ModbusRTUStatus_t ModbudRTUReadInputRegister(ModbusDeviceConfigs_t configs, uint16_t start_address, uint8_t len, uint8_t *data) {
+    return ModbudRTUReadRegister(0x04, configs, start_address, len, data);
 }
