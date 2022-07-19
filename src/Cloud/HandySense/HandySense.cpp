@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
+
+#include "./HandySense.h"
 #include "Time/SystemTime.h"
 #include "Sensor/Sensor.h"
 #include "Output/Output.h"
@@ -69,6 +71,8 @@ static void HandySense_receive_callback(String topic, uint8_t* payload, unsigned
 }
 
 void HandySense_process(void* args) {
+    Cloud_t *self = (Cloud_t *) args;
+
     if (!tcpClient || !client) {
         state = 0;
     }
@@ -101,6 +105,8 @@ void HandySense_process(void* args) {
             !connectionInfo["pass"].isNull()
         ) {
             state = 2;
+        } else {
+            self->status = CLOUD_WAIT_CONNECT;
         }
     }
     if (state == 2) { // Connect
@@ -115,6 +121,7 @@ void HandySense_process(void* args) {
         client->setSocketTimeout(2);
         if (client->connect(client_id, username, password)) { // Connected
             client->subscribe("@private/#");
+            self->status = CLOUD_CONNECTED;
 
             state = 3;
         } else {

@@ -8,6 +8,7 @@
 #include "../DisplayDef.h"
 #include "Board/Board.h"
 #include "Sensor/Sensor.h"
+#include "Cloud/Cloud.h"
 #include "Time/SystemTime.h"
 
 #ifdef BOARD_FARM1
@@ -78,11 +79,11 @@ static void updateTimeTask(lv_task_t*) {
 static void updateConnectionTask(lv_task_t*) {
     if (WiFi.isConnected()) {
       lv_obj_set_hidden(imgWiFi, false);
-      /*if (client.connected()) {
+      if (Cloud_getStatus() == CLOUD_CONNECTED) {
         lv_obj_set_hidden(imgNexpie, false);
       } else {
         lv_obj_set_hidden(imgNexpie, !lv_obj_get_hidden(imgNexpie));
-      }*/
+      }
     } else {
       lv_obj_set_hidden(imgWiFi, !lv_obj_get_hidden(imgWiFi));
       lv_obj_set_hidden(imgNexpie, true);

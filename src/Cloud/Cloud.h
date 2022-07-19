@@ -2,6 +2,9 @@
 
 #include "./CloudDef.h"
 
+void Cloud_process() ;
+CloudStatus_t Cloud_getStatus() ;
+
 // Cloud defined
 #include "./HandySense/HandySense.h"
 
