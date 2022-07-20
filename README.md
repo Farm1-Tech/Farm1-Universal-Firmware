@@ -15,7 +15,7 @@
 
  - [x] SHT20 (I2C)
  - [ ] SHT30 (I2C)
- - [ ] XY-MD02 (RS485/Modbus RTU)
+ - [x] XY-MD02 (RS485/Modbus RTU)
  - [ ] DHT22 (IO)
  - [ ] DS18B20 (IO)
 
@@ -23,14 +23,14 @@
 
  - [x] SHT20 (I2C)
  - [ ] SHT30 (I2C)
- - [ ] XY-MD02 (RS485/Modbus RTU)
+ - [x] XY-MD02 (RS485/Modbus RTU)
  - [ ] DHT22 (IO)
 
 ### เซ็นเซอร์ความชื้นดิน
 
  - [ ] Analog Soil (Analog)
  - [ ] JXBS-3001-TR (RS485/Modbus RTU)
- - [ ] RS485 Soil (RS485/Modbus RTU)
+ - [x] RS485 Soil (RS485/Modbus RTU)
 
 ### เซ็นเซอร์แสง
 
