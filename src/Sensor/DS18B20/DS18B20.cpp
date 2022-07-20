@@ -46,6 +46,10 @@ SensorStatus_t DS18B20_getValue(void* args, SensorType_t type, void* value) {
     if (type == TEMPERATURE) {
         sensors.requestTemperatures(); 
         *value_f = sensors.getTempCByIndex(0);
+        if (*value_f == DEVICE_DISCONNECTED_C) {
+            init_sensor = false;
+            return READ_FAIL;
+        }
         return WORK_WELL;
     }
 
