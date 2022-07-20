@@ -30,7 +30,7 @@
 
 ### เซ็นเซอร์ความชื้นดิน
 
- - [ ] Analog Soil (Analog)
+ - [x] Analog Soil (Analog)
  - [ ] JXBS-3001-TR (RS485/Modbus RTU)
  - [x] RS485 Soil (RS485/Modbus RTU)
 
