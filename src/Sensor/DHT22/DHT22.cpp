@@ -23,6 +23,7 @@ void DHT22_process(void* args) {
 }
 
 // static bool init_dht = false;
+static uint64_t last_read_dht = 0;
 
 SensorStatus_t DHT22_getValue(void* args, SensorType_t type, void* value) {
     Sensor_t *self = (Sensor_t *) args;
@@ -35,8 +36,12 @@ SensorStatus_t DHT22_getValue(void* args, SensorType_t type, void* value) {
 
     float *value_f = (float *)value;
 
-    if (readDHT() != DHT_OK) {
-        return READ_FAIL;
+    if ((millis() - last_read_dht) >= 1000) {
+        if (readDHT() != DHT_OK) {
+            Serial.println("DHT22 read fail");
+            return READ_FAIL;
+        }
+        last_read_dht = millis();
     }
 
     if (type == TEMPERATURE) {
