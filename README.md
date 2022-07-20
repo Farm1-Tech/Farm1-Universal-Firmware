@@ -16,7 +16,7 @@
  - [x] SHT20 (I2C)
  - [ ] SHT30 (I2C)
  - [x] XY-MD02 (RS485/Modbus RTU)
- - [ ] DHT22 (IO)
+ - [x] DHT22 (IO)
  - [x] AM2301 (IO)
  - [x] DS18B20 (IO)
 
@@ -25,7 +25,7 @@
  - [x] SHT20 (I2C)
  - [ ] SHT30 (I2C)
  - [x] XY-MD02 (RS485/Modbus RTU)
- - [ ] DHT22 (IO)
+ - [x] DHT22 (IO)
  - [x] AM2301 (IO)
 
 ### เซ็นเซอร์ความชื้นดิน
