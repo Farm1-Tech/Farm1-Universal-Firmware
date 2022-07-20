@@ -12,7 +12,7 @@
 #define DATA_SEND_INTERVAL_MS (2 * 60 * 60 * 1000) // 2 min = 2 * 60 * 60 * 1000 ms
 #define SHADOW_UPDATE_INTERVAL_MS (1 * 60 * 1000) // 1 min
 static int state = 0;
-static bool force_shadow_update = false;
+static uint8_t force_shadow_update = 0;
 
 static Client *tcpClient = NULL;
 static PubSubClient *client = NULL;
@@ -279,10 +279,10 @@ void HandySense_process(void* args) {
 
         static uint64_t last_send_shadow_update = 0;
         if ((last_send_shadow_update == 0) || ((millis() - last_send_shadow_update) > (SHADOW_UPDATE_INTERVAL_MS)) || force_shadow_update) {
-            if (update_shadow(UPDATE_ALL)) {
+            if (update_shadow(force_shadow_update ? force_shadow_update : UPDATE_ALL)) {
                 last_send_shadow_update = millis();
                 if (force_shadow_update) {
-                    force_shadow_update = false;
+                    force_shadow_update = 0;
                 }
             } else {
                 Serial.println("Send data to NETPIE fail");
@@ -309,7 +309,7 @@ void HandySense_process(void* args) {
             Output_getValueOne(ch, &active); \
             if (!active) { \
                 Output_setValueOne(ch, true); \
-                force_shadow_update = true; \
+                force_shadow_update |= UPDATE_RELAY; \
             } \
 })
 
@@ -318,7 +318,7 @@ void HandySense_process(void* args) {
             Output_getValueOne(ch, &active); \
             if (active) { \
                 Output_setValueOne(ch, false); \
-                force_shadow_update = true; \
+                force_shadow_update |= UPDATE_RELAY; \
             } \
 })
 
