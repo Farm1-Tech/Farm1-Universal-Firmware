@@ -17,8 +17,17 @@ SystemTimeStatus_t Time_init() {
     return TIME_OK;
 }
 
+static time_t last_time_sync = 0;
+static uint64_t last_time_of_sync = 0;
 
 SystemTimeStatus_t Time_now(struct tm* now) {
+    if ((last_time_of_sync != 0) && ((millis() - last_time_of_sync) < (60 * 1000))) {
+        time_t time_now = last_time_sync + ((millis() - last_time_of_sync) / 1000);
+        struct tm* now_got = localtime(&time_now);
+        memcpy(now, now_got, sizeof(struct tm));
+        return TIME_OK;
+    }
+
     bool getTimeFromInternet = false;
     if (WiFi.isConnected()) {
         configTime(TIMEZONE, 0, NTP_SERVER, NTP_SERVER1, NTP_SERVER2);
@@ -39,6 +48,9 @@ SystemTimeStatus_t Time_now(struct tm* now) {
             }
         }
     }
+
+    last_time_sync = mktime(now);
+    last_time_of_sync = millis();
 
     return TIME_OK;
 }

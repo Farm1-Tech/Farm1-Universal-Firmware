@@ -135,7 +135,7 @@ DisplayStatus_t Farm1_LCD_3_2_process(void *args) {
         digitalWrite(LCD_BL_PIN, LOW);
 
         lv_task_create(updateSensorValueTask, 1000, LV_TASK_PRIO_MID, NULL);
-        lv_task_create(updateTimeTask, 1000, LV_TASK_PRIO_MID, NULL);
+        lv_task_create(updateTimeTask, 300, LV_TASK_PRIO_MID, NULL);
         lv_task_create(updateConnectionTask, 300, LV_TASK_PRIO_MID, NULL);
 
         state = 1;
