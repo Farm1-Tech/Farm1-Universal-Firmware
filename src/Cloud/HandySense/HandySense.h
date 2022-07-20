@@ -9,4 +9,5 @@ static Cloud_t HandySense_Cloud = {
     .option = NULL,
     .status = CLOUD_WAIT_CONNECT,
     .process = HandySense_process,
+    .cleanup = NULL,
 };
