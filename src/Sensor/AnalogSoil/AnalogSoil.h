@@ -9,8 +9,8 @@ SensorStatus_t AnalogSoil_getValue(void*, SensorType_t, void*) ;
 // Sensor definded
 typedef struct {
     uint8_t pin;
-    uint16_t min;
-    uint16_t max;
+    float min;
+    float max;
 } AnalogSoil_Option_t;
 
 static Sensor_t AnalogSoil_Sensor = {
