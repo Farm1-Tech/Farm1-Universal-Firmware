@@ -6,14 +6,31 @@ DynamicJsonDocument jsonDoc(1024);
 
 static int state = 0;
 
-void SerialConfigs_process() {
-    if (state == 0) {
-        Serial.write((uint8_t*) "\x00\x6F\xDE", 3);
-        Serial.write(0x02); // STX
+byte STX = 02;
+byte ETX = 03;
+uint8_t START_PATTERN[] = {0, 0, 0, 111, 222};
 
-        JsonObject connectionInfo = GlobalConfigs["handysense"]["connection"].as<JsonObject>();
+static void send_configs_to_serial() {
+    Serial.write(START_PATTERN, sizeof(START_PATTERN));
+    Serial.flush();
+
+    Serial.write(STX); // STX
+
+    jsonDoc.clear();
+    JsonObject connectionInfo = GlobalConfigs["handysense"]["connection"].as<JsonObject>();
+    if (
+        connectionInfo["server"].isNull() ||
+        connectionInfo["port"].isNull() ||
+        connectionInfo["client"].isNull() ||
+        connectionInfo["user"].isNull() ||
+        connectionInfo["pass"].isNull() ||
+        GlobalConfigs["wifi"]["ssid"].isNull() ||
+        GlobalConfigs["wifi"]["password"].isNull()
+    ) {
+        Serial.print("null");
+    } else {
         jsonDoc["server"] = connectionInfo["server"].as<String>();
-        jsonDoc["port"] = connectionInfo["port"].as<int>();
+        jsonDoc["port"] = connectionInfo["port"].as<String>();
         jsonDoc["client"] = connectionInfo["client"].as<String>();
         jsonDoc["user"] = connectionInfo["user"].as<String>();
         jsonDoc["pass"] = connectionInfo["pass"].as<String>();
@@ -21,9 +38,18 @@ void SerialConfigs_process() {
         // WiFi Connect
         jsonDoc["ssid"]     = GlobalConfigs["wifi"]["ssid"].as<String>();
         jsonDoc["password"] = GlobalConfigs["wifi"]["password"].as<String>();
-        serializeJsonPretty(jsonDoc, Serial);
 
-        Serial.write(0x03); // ETX
+        serializeJson(jsonDoc, Serial);
+        jsonDoc.clear();
+    }
+
+    Serial.write(ETX); // ETX
+}
+
+void SerialConfigs_process() {
+    if (state == 0) {
+        // delay(2000);
+        send_configs_to_serial();
 
         Serial.setTimeout(100);
         state = 1;
@@ -39,14 +65,12 @@ void SerialConfigs_process() {
                 }
                 
                 if (jsonDoc.containsKey("client")) {
-                    JsonObject connectionInfo = GlobalConfigs["handysense"]["connection"];
-                    if (!jsonDoc["client"].as<String>().equals(connectionInfo["client"].as<String>())) {
-                        GlobalConfigs["handysense"]["connection"]["server"] = jsonDoc["server"].as<String>();
-                        GlobalConfigs["handysense"]["connection"]["port"] = jsonDoc["port"].as<int>();
-                        GlobalConfigs["handysense"]["connection"]["client"] = jsonDoc["client"].as<String>();
-                        GlobalConfigs["handysense"]["connection"]["user"] = jsonDoc["user"].as<String>();
-                        GlobalConfigs["handysense"]["connection"]["pass"] = jsonDoc["pass"].as<String>();
-                    }
+                    GlobalConfigs["handysense"]["connection"]["server"] = jsonDoc["server"].as<String>();
+                    GlobalConfigs["handysense"]["connection"]["port"] = jsonDoc["port"].as<int>();
+                    GlobalConfigs["handysense"]["connection"]["client"] = jsonDoc["client"].as<String>();
+                    GlobalConfigs["handysense"]["connection"]["user"] = jsonDoc["user"].as<String>();
+                    GlobalConfigs["handysense"]["connection"]["pass"] = jsonDoc["pass"].as<String>();
+
                     // WiFi Connect
                     GlobalConfigs["wifi"]["ssid"] = jsonDoc["ssid"].as<String>();
                     GlobalConfigs["wifi"]["password"] = jsonDoc["password"].as<String>();
@@ -54,8 +78,9 @@ void SerialConfigs_process() {
 
                     StorageConfigs_save();
 
-                    delay(100);
+                    delay(1000);
                     ESP.restart();
+                    while(1) delay(100);
                 }
             } else {
                 Serial.println("deserializeJson fail : " + data_str);

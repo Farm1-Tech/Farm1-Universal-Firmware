@@ -72,7 +72,7 @@ SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
         JsonObject sensor_select = GlobalConfigs["device"][SensorTypeToKey(type)];
         if (sensor_select.containsKey("type")) {
             String sensor_type_select = sensor_select["type"].as<String>();
-            Serial.printf("Sensor type select: %s\n", sensor_type_select.c_str());
+            // Serial.printf("Sensor type select: %s\n", sensor_type_select.c_str());
             for (uint8_t i=0;i<Sensor_length;i++) {
                 if (sensor_type_select.equals(Sensor[i].id)) {
                     if (sensor_select.containsKey("option") && Sensor[i].genOption) {

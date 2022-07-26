@@ -93,7 +93,7 @@ static bool update_shadow(uint8_t type) {
     String shadow;
     serializeJson(shadowContent, shadow);
     shadowContent.clear();
-    Serial.printf("Send %s : %d\n", shadow.c_str(), shadow.length());
+    // Serial.printf("Send %s : %d\n", shadow.c_str(), shadow.length());
     return client->publish("@shadow/data/update", shadow.c_str());
 }
 
@@ -103,13 +103,13 @@ static void HandySense_receive_callback(String topic, uint8_t* payload, unsigned
         payload_str += (char) payload[i];
     }
 
-    Serial.printf("[%s]: %s\n", topic.c_str(), payload_str.c_str());
+    // Serial.printf("[%s]: %s\n", topic.c_str(), payload_str.c_str());
     if (topic.startsWith("@private/led")) { // Relay direct control
         int ch = 0;
         if (sscanf(topic.c_str(), "@private/led%d", &ch) != 1) {
             Serial.println("CH LED error");
         }
-        Serial.printf("Direct Write: %d => %s\n", ch, payload_str.c_str());
+        // Serial.printf("Direct Write: %d => %s\n", ch, payload_str.c_str());
         Output_setValueOne(ch, payload_str == "on");
         update_shadow(UPDATE_RELAY);
     } else if (topic.startsWith("@private/timer")) { // Control output by Timer configs
@@ -139,7 +139,7 @@ static void HandySense_receive_callback(String topic, uint8_t* payload, unsigned
             control_by_timer[ch][timer]["repeat"][i] = repeat[i] == 1;
         }
 
-        serializeJsonPretty(GlobalConfigs, Serial);
+        // serializeJsonPretty(GlobalConfigs, Serial);
 
         update_shadow(UPDATE_TIMER);
     } else if (topic.startsWith("@private/min_temp")) { // Control output by Temp min configs
@@ -233,7 +233,7 @@ void HandySense_process(void* args) {
         if (client->connect(client_id, username, password)) { // Connected
             client->subscribe("@private/#");
             self->status = CLOUD_CONNECTED;
-            Serial.println("NETPIE connected");
+            // Serial.println("NETPIE connected");
             state = 3;
         } else {
             Serial.println("NETPIE connect fail");
@@ -244,7 +244,7 @@ void HandySense_process(void* args) {
         client->loop(); // keep mqtt work
 
         if (!client->connected()) {
-            Serial.println("NETPIE connection lost");
+            // Serial.println("NETPIE connection lost");
             state = 1;
         } else {
             static uint64_t last_send_sensor = 0;

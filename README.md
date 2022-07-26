@@ -49,7 +49,7 @@
 
 ## Cloud Service
 
- - [ ] HandySense
+ - [x] HandySense
  - [ ] Blynk IoT
  - [ ] Azure IoT Central
  - [ ] AWS IoT
