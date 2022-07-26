@@ -50,6 +50,7 @@ SensorStatus_t SHT30_getValue(void* args, SensorType_t type, void* value) {
     if ((type == TEMPERATURE) || (type == HUMIDITY)) {
         if (I2CWrite(addr, (uint8_t*)"\xE0\x00", 2) != 0) {
             Serial.printf("SHT30 Triger measurement fail\n");
+            init_sht = false;
             return READ_FAIL;
         }
         
@@ -58,6 +59,7 @@ SensorStatus_t SHT30_getValue(void* args, SensorType_t type, void* value) {
         uint8_t buff[6];
         if (I2CRead(addr, NULL, 0, buff, 6) != 0) {
             Serial.printf("SHT30 Read measurement fail\n");
+            init_sht = false;
             return READ_FAIL;
         }
         float tempC = -45.0 + 175.0 * ((float)(((uint16_t)buff[0] << 8) | buff[1]) / 0xFFFF);
