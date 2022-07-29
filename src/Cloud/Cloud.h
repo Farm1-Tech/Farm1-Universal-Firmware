@@ -4,6 +4,7 @@
 
 void Cloud_process() ;
 CloudStatus_t Cloud_getStatus() ;
+void Cloud_apiInit() ;
 
 // Cloud defined
 #include "./HandySense/HandySense.h"
