@@ -3,6 +3,7 @@
 #include "ArduinoJson.h"
 #include "AsyncTCP.h"
 #include "AsyncJson.h"
+#include "Update.h"
 
 #include "Board/Board.h"
 #include "./WebServer.h"
@@ -88,13 +89,13 @@ void REST_API_init() {
         }
 
         // Output
-        JsonArray output = jsonDoc.createNestedArray("output");
+        JsonObject output = jsonDoc.createNestedObject("output");
         for (uint8_t i=0;i<4;i++) {
             bool output_status;
             if (Output_getValueOne(i, &output_status) == OUTPUT_WORK_WELL) {
-                output.add(output_status ? 1 : 0);
+                output["o" + String(i + 1)].set(output_status ? 1 : 0);
             } else {
-                output.add((char*)NULL);
+                output["o" + String(i + 1)].set((char*)NULL);
             }
         }
 
@@ -115,18 +116,19 @@ void REST_API_init() {
     server.addHandler(new AsyncCallbackJsonWebHandler("/api/io", [](AsyncWebServerRequest *request, JsonVariant &json) {
         if (request->method() == HTTP_POST) {
             // Set
-            if (json["output"].is<JsonArray>()) {
-                JsonArray output_set = json["output"].as<JsonArray>();
-                uint8_t index = 0;
-                for (JsonArray::iterator it=output_set.begin(); it!=output_set.end(); ++it) {
-                    int value = it->as<int>();
-                    if (Output_setValueOne(index, value == 1) != OUTPUT_WORK_WELL) {
-                        Serial.printf("Output %d write error", index);
+            if (json["output"].is<JsonObject>()) {
+                JsonObject output_set = json["output"].as<JsonObject>();
+                for (uint8_t i=0;i<4;i++) {
+                    String key = "o" + String(i + 1);
+                    if (!output_set[key].isNull()) {
+                        int value = output_set[key].as<int>();
+                        if (Output_setValueOne(i, value == 1) != OUTPUT_WORK_WELL) {
+                            Serial.printf("Output %d write error", i);
+                        }
                     }
-                    index++;
                 }
             } else {
-                request->send(400, "text/plain", "object 'output' not array");
+                request->send(400, "text/plain", "object 'output' not object");
                 return;
             }
             
@@ -135,13 +137,13 @@ void REST_API_init() {
             response->setCode(200);
 
             jsonDoc.clear();
-            JsonArray output = jsonDoc.createNestedArray("output");
+            JsonObject output = jsonDoc.createNestedObject("output");
             for (uint8_t i=0;i<4;i++) {
-                bool output_status = false;
+                bool output_status;
                 if (Output_getValueOne(i, &output_status) == OUTPUT_WORK_WELL) {
-                    output.add(output_status ? 1 : 0);
+                    output["o" + String(i + 1)].set(output_status ? 1 : 0);
                 } else {
-                    output.add((char*)NULL);
+                    output["o" + String(i + 1)].set((char*)NULL);
                 }
             }
 
@@ -149,4 +151,43 @@ void REST_API_init() {
             request->send(response);
         }
     }, 4 * 1024));
+
+    // OTA
+    server.on("/api/update", HTTP_POST, [](AsyncWebServerRequest *request){
+        bool shouldReboot = !Update.hasError();
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", shouldReboot ? "OK" : "FAIL");
+        response->addHeader("Connection", "close");
+        request->send(response);
+
+        // Reset after OTA
+        if (shouldReboot) {
+            xTaskCreate([](void*) {
+                delay(300);
+                ESP.restart();
+
+                vTaskDelete(NULL);
+            }, "ResetAfterOTA", 512, NULL, 20, NULL);
+        }
+    },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+        if(!index){
+            Serial.printf("Update Start: %s\n", filename.c_str());
+            if(!Update.begin()){
+                Update.printError(Serial);
+            }
+        }
+
+        if(!Update.hasError()){
+            if(Update.write(data, len) != len){
+                Update.printError(Serial);
+            }
+        }
+
+        if(final){
+            if(Update.end(true)){
+                Serial.printf("Update Success: %uB\n", index+len);
+            } else {
+                Update.printError(Serial);
+            }
+        }
+  });
 }
