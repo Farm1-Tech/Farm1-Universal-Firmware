@@ -69,22 +69,22 @@ void REST_API_init() {
         jsonDoc["sensor"]["light"] = (char*)NULL;
 
         float temperature;
-        if (Sensor_getValueOne(TEMPERATURE, (void*) &temperature) == WORK_WELL) {
+        if (Sensor_getValueOneNonBlock(TEMPERATURE, (void*) &temperature) == WORK_WELL) {
             jsonDoc["sensor"]["temperature"] = temperature;
         }
 
         float humidity;
-        if (Sensor_getValueOne(HUMIDITY, (void*) &humidity) == WORK_WELL) {
+        if (Sensor_getValueOneNonBlock(HUMIDITY, (void*) &humidity) == WORK_WELL) {
             jsonDoc["sensor"]["humidity"] = humidity;
         }
 
         float soil;
-        if (Sensor_getValueOne(SOIL, (void*) &soil) == WORK_WELL) {
+        if (Sensor_getValueOneNonBlock(SOIL, (void*) &soil) == WORK_WELL) {
             jsonDoc["sensor"]["soil"] = soil;
         }
 
         float light;
-        if (Sensor_getValueOne(AMBIENT_LIGHT, (void*) &light) == WORK_WELL) {
+        if (Sensor_getValueOneNonBlock(AMBIENT_LIGHT, (void*) &light) == WORK_WELL) {
             jsonDoc["sensor"]["light"] = light;
         }
 

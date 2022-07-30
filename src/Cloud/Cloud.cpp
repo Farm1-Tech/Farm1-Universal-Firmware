@@ -49,9 +49,12 @@ void Cloud_apiInit() {
         {
             DynamicJsonDocument jsonDoc(4 * 1024);
 
-            jsonDoc["timer"] = GlobalConfigs["handysense"]["control_by_timer"].as<JsonObject>();
-            jsonDoc["soil"] = GlobalConfigs["handysense"]["control_by_soil"].as<JsonObject>();
-            jsonDoc["temp"] = GlobalConfigs["handysense"]["control_by_temp"].as<JsonObject>();
+            jsonDoc["timer"] = GlobalConfigs["handysense"]["control_by_timer"].as<JsonArray>();
+            jsonDoc["soil"] = GlobalConfigs["handysense"]["control_by_soil"].as<JsonArray>();
+            jsonDoc["temp"] = GlobalConfigs["handysense"]["control_by_temp"].as<JsonArray>();
+
+            serializeJsonPretty(GlobalConfigs, Serial);
+            serializeJsonPretty(jsonDoc, Serial);
             
             serializeJsonPretty(jsonDoc, *response);
         }
@@ -62,9 +65,9 @@ void Cloud_apiInit() {
     server.addHandler(new AsyncCallbackJsonWebHandler("/api/handysense/auto", [](AsyncWebServerRequest *request, JsonVariant &json) {
         if (request->method() == HTTP_POST) {
             JsonObject jsonPost = json.as<JsonObject>();
-            GlobalConfigs["handysense"]["control_by_timer"] = jsonPost["timer"].as<JsonObject>();
-            GlobalConfigs["handysense"]["control_by_soil"] = jsonPost["soil"].as<JsonObject>();
-            GlobalConfigs["handysense"]["control_by_temp"] = jsonPost["temp"].as<JsonObject>();
+            GlobalConfigs["handysense"]["control_by_timer"] = jsonPost["timer"].as<JsonArray>();
+            GlobalConfigs["handysense"]["control_by_soil"] = jsonPost["soil"].as<JsonArray>();
+            GlobalConfigs["handysense"]["control_by_temp"] = jsonPost["temp"].as<JsonArray>();
             serializeJsonPretty(GlobalConfigs, Serial);
             StorageConfigs_save();
             request->send(200, "text/plain", "OK");
