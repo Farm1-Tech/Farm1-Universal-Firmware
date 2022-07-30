@@ -123,3 +123,13 @@ SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
     return res;
 } 
 
+SensorStatus_t Sensor_getValueOneNonBlock(SensorType_t type, void* value) {
+    float *value_f = (float*) value;
+
+    // Check and return last value
+    int type_index = SensorTypeToIndex(type);
+    if ((type_index != -1) && (type_index < SENSOR_TYPE_NUM)) {
+        *value_f = last_value[type_index];
+        return last_status[type_index];
+    }
+}
