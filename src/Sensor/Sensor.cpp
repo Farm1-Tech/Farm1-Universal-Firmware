@@ -39,17 +39,25 @@ static int SensorTypeToIndex(SensorType_t type) {
 static uint64_t last_value_update_time[SENSOR_TYPE_NUM];
 static float last_value[SENSOR_TYPE_NUM];
 static SensorStatus_t last_status[SENSOR_TYPE_NUM];
+static SemaphoreHandle_t SensorSemaphore;
 
 bool Sensor_init() {
+    SensorSemaphore = xSemaphoreCreateMutex();
+
     I2CSetup();
     for (uint8_t i=0;i<SENSOR_TYPE_NUM;i++) {
         last_value_update_time[i] = 0;
     }
 
+    xSemaphoreGive(SensorSemaphore);
     return true;
 }
 
 SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
+    if (xSemaphoreTake(SensorSemaphore, 2000 / portTICK_PERIOD_MS) == pdFALSE) {
+        return READ_FAIL;
+    }
+
     float *value_f = (float*) value;
 
     // Check and return last value
@@ -57,6 +65,7 @@ SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
     if ((type_index != -1) && (type_index < SENSOR_TYPE_NUM)) {
         if ((last_value_update_time != 0) && ((millis() - last_value_update_time[type_index]) < 1000)) {
             *value_f = last_value[type_index];
+            xSemaphoreGive(SensorSemaphore);
             return last_status[type_index];
         }
     }
@@ -108,6 +117,8 @@ SensorStatus_t Sensor_getValueOne(SensorType_t type, void* value) {
     last_value[type_index] = *value_f;
     last_status[type_index] = res;
     last_value_update_time[type_index] = millis();
+
+    xSemaphoreGive(SensorSemaphore);
     
     return res;
 } 
