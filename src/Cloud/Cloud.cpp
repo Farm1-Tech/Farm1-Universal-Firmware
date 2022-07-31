@@ -78,12 +78,18 @@ void Cloud_apiInit() {
         }
     }, 4 * 1024));
 
-    server.addHandler(new AsyncCallbackJsonWebHandler("^\\/api\\/handysense\\/auto\\/([1-4]+)$", [](AsyncWebServerRequest *request, JsonVariant &json) {
-        int ch = request->pathArg(0).toInt();
+    server.addHandler(new AsyncCallbackJsonWebHandler("/api/handysense/auto-one", [](AsyncWebServerRequest *request, JsonVariant &json) {
+        if (!request->hasParam("ch")) {
+            request->send(401, "text/plain", "not found 'ch' in url");
+            return;
+        }
+
+        int ch = request->getParam("ch")->value().toInt();
+        Serial.printf("Req ! ch: %d\n", ch);
 
         if (request->method() == HTTP_POST) {
             JsonObject jsonPost = json.as<JsonObject>();
-            GlobalConfigs["handysense"]["control_by_timer"][ch] = jsonPost["timer"].as<JsonObject>();
+            GlobalConfigs["handysense"]["control_by_timer"][ch] = jsonPost["timer"].as<JsonArray>();
             GlobalConfigs["handysense"]["control_by_soil"][ch] = jsonPost["soil"].as<JsonObject>();
             GlobalConfigs["handysense"]["control_by_temp"][ch] = jsonPost["temp"].as<JsonObject>();
             serializeJsonPretty(GlobalConfigs, Serial);
