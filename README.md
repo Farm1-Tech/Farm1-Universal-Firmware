@@ -45,11 +45,11 @@
 ### จอแสดงผล
 
  - [x] Farm1-LCD3.2 (TFT LCD 3.2 inch, SPI)
+ - [ ] Farm1-LCD3.5CT
  - [ ] 20x4 Character LCD (I2C)
 
 ## Cloud Service
 
  - [x] HandySense
+ - [ ] iFarm by AIS
  - [ ] Blynk IoT
- - [ ] Azure IoT Central
- - [ ] AWS IoT
