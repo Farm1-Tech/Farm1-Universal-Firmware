@@ -70,9 +70,7 @@ void setup() {
   WebServer_init();
   
   // Load configs
-  if (!StorageConfigs_load()) {
-    Serial.println("load config fail");
-  }
+  StorageConfigs_load();
 }
 
 void loop() {
