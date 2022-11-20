@@ -1,0 +1,18 @@
+{
+  "codename": "Kanit18_th_en",
+  "ttf_path": "\\assets\\Kanit-Regular.ttf",
+  "bin_path": "\\assets\\ui_font_Kanit18_th_en.bin",
+  "c_path": "\\assets\\ui_font_Kanit18_th_en.c",
+  "cfg_path": "\\assets\\ui_font_Kanit18_th_en.fcfg",
+  "size": 18,
+  "bpp": 4,
+  "letters": 0,
+  "ranges": [
+    "0x20-0x7f",
+    " 0x0E01-0x0E3A",
+    " 0x0E3F-0x0E5B\t"
+  ],
+  "symbols": "",
+  "customparams": "--no-compress --no-prefilter",
+  "uploaded": false
+}
