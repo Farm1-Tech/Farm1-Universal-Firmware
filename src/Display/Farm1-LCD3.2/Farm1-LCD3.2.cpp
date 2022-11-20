@@ -116,12 +116,29 @@ DisplayStatus_t Farm1_LCD_3_2_process(void* args) {
 
         ui_init();
 
-        pinMode(LCD_BL_PIN, OUTPUT);
-        digitalWrite(LCD_BL_PIN, LOW);
+        lv_obj_t *value_label_map[4] = {
+            ui_overview_temp_value_label,
+            ui_overview_humi_value_label,
+            ui_overview_light_value_label,
+            ui_overview_soil_value_label,
+        };
+        SensorType_t type_map[4] = {
+            TEMPERATURE,
+            HUMIDITY,
+            AMBIENT_LIGHT,
+            SOIL
+        };
 
+        for (uint8_t i=0;i<4;i++) {
+            lv_label_set_text(value_label_map[i], "");
+        }
+        
         lv_timer_create(update_sensor_value_timer, 1000, NULL);
         lv_timer_create(update_time_timer, 300, NULL);
         lv_timer_create(update_connection_timer, 300, NULL);
+
+        pinMode(LCD_BL_PIN, OUTPUT);
+        digitalWrite(LCD_BL_PIN, LOW);
 
         state = 1;
     }
