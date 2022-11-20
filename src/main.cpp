@@ -53,6 +53,7 @@ void setup() {
   Serial.begin(115200);
 
   // Init system module
+  StorageConfigs_init();
   Sensor_init();
   Time_init();
   
