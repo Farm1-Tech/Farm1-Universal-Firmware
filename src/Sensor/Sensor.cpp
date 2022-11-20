@@ -132,4 +132,6 @@ SensorStatus_t Sensor_getValueOneNonBlock(SensorType_t type, void* value) {
         *value_f = last_value[type_index];
         return last_status[type_index];
     }
+
+    return SENSOR_NOT_FOUND;
 }
