@@ -6,11 +6,6 @@
 #define MCP79411 0x6F
 #define PCF8563 0x51
 
-static bool CheckI2CDevice(int addr) {
-    Wire.beginTransmission(addr);
-    return Wire.endTransmission() == 0;
-}
-
 static uint8_t BCDtoDEC(uint8_t n) {
     return ((n >> 4)  * 10) + (n & 0x0F);
 }
@@ -37,36 +32,32 @@ bool RTC_init() {
     }
 
     if (type == DS1338) {
-        if (I2CWrite(type, (uint8_t*) "\x07\x00", 2) != 0) {
+        if (I2CMemWrite(type, 0x07, 0x00) != 0) {
             return false;
         }
     }
 
     if (type == MCP79411) {
         uint8_t rtcsec = 0;
-        if (I2CRead(type, (uint8_t*) "\x00", 1, &rtcsec, 1) != 0) {
+        if (I2CMemRead(type, 0x00, &rtcsec) != 0) {
             return false;
         }
-        Serial.println((byte) rtcsec, HEX);
+        // Serial.println((byte) rtcsec, HEX);
         
         if ((rtcsec & 0x80) == 0) { // ST flag is 0
             Serial.printf("Set start flag 0x%02x\n", rtcsec);
-            uint8_t write_data[2] = {
-                0x00,
-                (uint8_t)(rtcsec | 0x80)
-            };
-            if (I2CWrite(MCP79411, write_data, 2) != 0) {
+            if (I2CMemWrite(MCP79411, 0x00, rtcsec | 0x80) != 0) {
                 return false;
             }
         }
 
-        if (I2CWrite(type, (uint8_t*) "\x07\x00", 2) != 0) { // Write 0 to EXTOSC flag, Disable external 32.768 kHz input
+        if (I2CMemWrite(type, 0x07, 0x00) != 0) { // Write 0 to EXTOSC flag, Disable external 32.768 kHz input
             return false;
         }
     }
 
     if (type == PCF8563) {
-        if (I2CWrite(type, (uint8_t*) "\x00\x00", 2) != 0) { // Write 0 to Oscillator Stop Flag for start
+        if (I2CMemWrite(type, 0x00, 0x00) != 0) { // Write 0 to Oscillator Stop Flag for start
             return false;
         }
     }
@@ -80,7 +71,7 @@ bool RTC_read(struct tm* timeinfo) {
     }
 
     uint8_t buff[7];
-    if (I2CRead(type, (uint8_t*)(type == PCF8563 ? "\x02" : "\x00"), 1, buff, 7) != 0) {
+    if (I2CMemRead(type, type == PCF8563 ? 0x02 : 0x00, buff, 7) != 0) {
         return false;
     }
 
@@ -121,10 +112,7 @@ bool RTC_write(struct tm* timeinfo) {
     buff[5] = DECtoBCD(timeinfo->tm_mon) & 0x1F;
     buff[6] = DECtoBCD((timeinfo->tm_year + 1900) % 100);
 
-    uint8_t write_data[1 + 7]; // Address + data
-    write_data[0] = type == PCF8563 ? 0x02 : 0x00;
-    memcpy(&write_data[1], &buff[0], 7);
-    if (I2CWrite(type, write_data, 1 + 7) != 0) {
+    if (I2CMemWrite(type, type == PCF8563 ? 0x02 : 0x00, buff, 7) != 0) {
         return false;
     }
     
