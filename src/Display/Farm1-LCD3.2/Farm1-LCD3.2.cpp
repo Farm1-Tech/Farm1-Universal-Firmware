@@ -122,12 +122,6 @@ DisplayStatus_t Farm1_LCD_3_2_process(void* args) {
             ui_overview_light_value_label,
             ui_overview_soil_value_label,
         };
-        SensorType_t type_map[4] = {
-            TEMPERATURE,
-            HUMIDITY,
-            AMBIENT_LIGHT,
-            SOIL
-        };
 
         for (uint8_t i=0;i<4;i++) {
             lv_label_set_text(value_label_map[i], "");
