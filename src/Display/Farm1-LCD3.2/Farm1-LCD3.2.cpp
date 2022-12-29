@@ -17,7 +17,7 @@
 #error "Board not support"
 #endif
 
-TFT_eSPI tft = TFT_eSPI();
+static TFT_eSPI tft = TFT_eSPI();
 
 #define DISPLAY_BUFFER_SIZE (10 * 1024)
 
@@ -28,6 +28,9 @@ static lv_color_t *buf;
 #include "./lvgl_page/ui.h"
 extern "C" {
 #include "./lvgl_page/ui_helpers.h"
+
+extern void ui_overview_screen_init();
+extern lv_obj_t * ui_overview;
 }
 // -----------
 
@@ -114,7 +117,8 @@ DisplayStatus_t Farm1_LCD_3_2_process(void* args) {
         disp_drv.draw_buf = &draw_buf;
         lv_disp_drv_register( &disp_drv );
 
-        ui_init();
+        ui_overview_screen_init();
+        lv_disp_load_scr(ui_overview);
 
         lv_obj_t *value_label_map[4] = {
             ui_overview_temp_value_label,

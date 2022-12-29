@@ -1,0 +1,16 @@
+{
+  "codename": "Kanit16_en",
+  "ttf_path": "\\assets\\Kanit-Regular.ttf",
+  "bin_path": "\\assets\\ui_font_Kanit16_en.bin",
+  "c_path": "\\assets\\ui_font_Kanit16_en.c",
+  "cfg_path": "\\assets\\ui_font_Kanit16_en.fcfg",
+  "size": 16,
+  "bpp": 4,
+  "letters": 0,
+  "ranges": [
+    "0x20-0x7f"
+  ],
+  "symbols": "°",
+  "customparams": "--no-compress --no-prefilter",
+  "uploaded": false
+}
