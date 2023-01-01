@@ -14,6 +14,8 @@
 
 #define MAX_PRESS_TIME (5 * 1000)
 
+static const char *TAG = "main";
+
 bool CheckButtonEnterToConfigsMode() {
 #ifdef BOARD_FARM1
     bool state_of_output = digitalRead(CONFIGS_BUTTON_PIN);
@@ -65,6 +67,7 @@ void setup() {
 
   // Init WiFi as Station, start SmartConfig
   WiFi.mode(WIFI_AP_STA);
+  WiFiManager_init();
 
   // Init HTTP Web Server
   WebServer_init();
@@ -74,22 +77,27 @@ void setup() {
 }
 
 void loop() {
+    /*
     static bool modeConfig = false;
     if (!modeConfig) {
-        WiFiManager_process();
         Cloud_process();
         if (CheckButtonEnterToConfigsMode()) {
             modeConfig = true;
+            WiFiManager_stop();
             Serial.println("Enter to config mode");
         }
     } else {
         if (SmartConfig_process() == FINISH_CONFIG) {
             modeConfig = false;
+            WiFiManager_run();
             Serial.println("Exit config mode");
         }
     }
+    */
+    uint32_t start = millis();
     Display_process();
-    
+
+    ESP_LOGI(TAG, "Display use %d ms", millis() - start);
     /*
     static uint32_t last_print = 0;
     if ((millis() - last_print) >= 1000) {

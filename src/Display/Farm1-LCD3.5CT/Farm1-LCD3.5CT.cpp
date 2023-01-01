@@ -220,7 +220,7 @@ DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
             lv_label_set_text(value_label_map[i], "");
         }
         
-        lv_timer_create(update_sensor_value_timer, 1000, NULL);
+        // lv_timer_create(update_sensor_value_timer, 1000, NULL);
         lv_timer_create(update_time_timer, 300, NULL);
         lv_timer_create(update_connection_timer, 300, NULL);
 
