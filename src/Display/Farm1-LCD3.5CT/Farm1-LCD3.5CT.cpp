@@ -34,6 +34,7 @@ extern "C" {
 #include "./lvgl_page/ui_helpers.h"
 
 extern void ui_farm1_lcd35ct_overview_screen_init();
+extern void ui_farm1_lcd35ct_wifi_settings_screen_init();
 extern lv_obj_t * ui_farm1_lcd35ct_overview;
 }
 // -----------
@@ -177,6 +178,33 @@ static void update_output_status_timer(lv_timer_t* timer) {
     }
 }
 
+static void ta_event_cb(lv_event_t * e) {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * ta = lv_event_get_target(e);
+    lv_obj_t * kb = (lv_obj_t *) lv_event_get_user_data(e);
+    if(code == LV_EVENT_FOCUSED) {
+        if(lv_indev_get_type(lv_indev_get_act()) != LV_INDEV_TYPE_KEYPAD) {
+            lv_keyboard_set_textarea(kb, ta);
+            lv_obj_set_style_max_height(kb, LV_HOR_RES * 2 / 3, 0);
+            // lv_obj_update_layout(tv);   /*Be sure the sizes are recalculated*/
+            // lv_obj_set_height(tv, LV_VER_RES - lv_obj_get_height(kb));
+            lv_obj_clear_flag(kb, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_scroll_to_view_recursive(ta, LV_ANIM_OFF);
+        }
+    } else if(code == LV_EVENT_DEFOCUSED) {
+        lv_keyboard_set_textarea(kb, NULL);
+        // lv_obj_set_height(tv, LV_VER_RES);
+        lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
+        lv_indev_reset(NULL, ta);
+
+    } else if(code == LV_EVENT_READY || code == LV_EVENT_CANCEL) {
+        // lv_obj_set_height(tv, LV_VER_RES);
+        lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
+        lv_indev_reset(NULL, ta);   /*To forget the last clicked object to make it focusable again*/
+    }
+}
+
+
 static int state = 0;
 
 DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
@@ -207,6 +235,7 @@ DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
         lv_indev_drv_register(&indev_drv);
         
         ui_farm1_lcd35ct_overview_screen_init();
+        ui_farm1_lcd35ct_wifi_settings_screen_init();
         lv_disp_load_scr(ui_farm1_lcd35ct_overview);
 
         lv_obj_t *value_label_map[4] = {
@@ -219,7 +248,7 @@ DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
         for (uint8_t i=0;i<4;i++) {
             lv_label_set_text(value_label_map[i], "");
         }
-        
+          
         // lv_timer_create(update_sensor_value_timer, 1000, NULL);
         lv_timer_create(update_time_timer, 300, NULL);
         lv_timer_create(update_connection_timer, 300, NULL);
@@ -230,6 +259,12 @@ DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
         lv_obj_add_event_cb(ui_di35ct_overview_relay4_btn, relay_control_cb, LV_EVENT_CLICKED, NULL);
         lv_timer_create(update_output_status_timer, 300, NULL);
 
+        /*Create a keyboard*/
+        lv_obj_t * kb = lv_keyboard_create(ui_farm1_lcd35ct_wifi_settings);
+        lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
+
+        lv_obj_add_event_cb(ui_farm1_lcd35ct_wifi_name_inp, ta_event_cb, LV_EVENT_ALL, kb);
+        lv_obj_add_event_cb(ui_farm1_lcd35ct_wifi_pass_inp, ta_event_cb, LV_EVENT_ALL, kb);
 
         pinMode(LCD_BL_PIN, OUTPUT);
         digitalWrite(LCD_BL_PIN, LOW);
