@@ -77,7 +77,6 @@ void setup() {
 }
 
 void loop() {
-    /*
     static bool modeConfig = false;
     if (!modeConfig) {
         Cloud_process();
@@ -93,7 +92,7 @@ void loop() {
             Serial.println("Exit config mode");
         }
     }
-    */
+    
     uint32_t start = millis();
     Display_process();
 
