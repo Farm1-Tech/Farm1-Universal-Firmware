@@ -39,6 +39,14 @@ CloudStatus_t Cloud_getStatus() {
     return cloud_select->status;
 }
 
+void Cloud_ioUpdate() {
+    if (cloud_select == NULL) {
+        return;
+    }
+
+    return cloud_select->io_update((void*) cloud_select);
+}
+
 void Cloud_apiInit() {
 
     // Auto Control

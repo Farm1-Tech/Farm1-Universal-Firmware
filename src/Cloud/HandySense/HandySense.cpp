@@ -395,3 +395,9 @@ void HandySense_process(void* args) {
     // Keep web configs via Serial work
     SerialConfigs_process();
 }
+
+void HandySense_ioUpdate(void* args) {
+    Cloud_t *self = (Cloud_t *) args;
+
+    force_shadow_update = UPDATE_RELAY;
+}

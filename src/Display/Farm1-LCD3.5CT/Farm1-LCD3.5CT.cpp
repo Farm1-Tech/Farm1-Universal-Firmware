@@ -178,6 +178,7 @@ static void update_output_status_timer(lv_timer_t* timer) {
         }
         value ? lv_obj_add_state(obj[i], LV_STATE_CHECKED) : lv_obj_clear_state(obj[i], LV_STATE_CHECKED);
     }
+    Cloud_ioUpdate();
 }
 
 static void ta_event_cb(lv_event_t * e) {

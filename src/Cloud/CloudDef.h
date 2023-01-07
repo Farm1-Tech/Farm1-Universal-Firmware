@@ -14,6 +14,7 @@ typedef struct {
     void *option;
     CloudStatus_t status;
     TProcessHandlerFunction process;
+    TProcessHandlerFunction io_update;
     TProcessHandlerFunction cleanup;
 } Cloud_t;
 
