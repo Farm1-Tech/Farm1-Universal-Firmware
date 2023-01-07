@@ -95,15 +95,10 @@ void loop() {
     
     uint32_t start = millis();
     Display_process();
-
-    ESP_LOGI(TAG, "Display use %d ms", millis() - start);
-    /*
-    static uint32_t last_print = 0;
-    if ((millis() - last_print) >= 1000) {
-        last_print = millis();
-        Serial.println("loop");
+    uint32_t diff = millis() - start;
+    if (diff > 100) {
+        ESP_LOGI(TAG, "Display use %d ms", diff);
     }
-    */
-
+    
     delay(10); // Stop for other task work
 }
