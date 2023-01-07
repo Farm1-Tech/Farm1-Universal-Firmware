@@ -24,7 +24,7 @@ static int state = 0;
 
 void Cloud_process() {
     if (state == 0) {
-        xTaskCreatePinnedToCore(CloudTask, "CloudTask", 4 * 1024, NULL, 20, &CloudTaskHandle, APP_CPU_NUM);
+        xTaskCreatePinnedToCore(CloudTask, "CloudTask", 8 * 1024, NULL, 20, &CloudTaskHandle, APP_CPU_NUM);
         state = 1;
     } else if (state == 1) {
 

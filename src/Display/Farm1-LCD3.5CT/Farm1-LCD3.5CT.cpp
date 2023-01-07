@@ -11,6 +11,8 @@
 #include "Sensor/Sensor.h"
 #include "Time/SystemTime.h"
 #include "Output/Output.h"
+#include "StorageConfigs.h"
+#include "WiFiManager.h"
 #include "./ILI9488.h"
 
 #ifdef BOARD_FARM1
@@ -186,19 +188,19 @@ static void ta_event_cb(lv_event_t * e) {
         if(lv_indev_get_type(lv_indev_get_act()) != LV_INDEV_TYPE_KEYPAD) {
             lv_keyboard_set_textarea(kb, ta);
             lv_obj_set_style_max_height(kb, LV_HOR_RES * 2 / 3, 0);
-            // lv_obj_update_layout(tv);   /*Be sure the sizes are recalculated*/
-            // lv_obj_set_height(tv, LV_VER_RES - lv_obj_get_height(kb));
+            lv_obj_update_layout(ui_farm1_lcd35ct_wifi_settings_box);   /*Be sure the sizes are recalculated*/
+            lv_obj_set_height(ui_farm1_lcd35ct_wifi_settings_box, LV_VER_RES - lv_obj_get_height(kb));
             lv_obj_clear_flag(kb, LV_OBJ_FLAG_HIDDEN);
             lv_obj_scroll_to_view_recursive(ta, LV_ANIM_OFF);
         }
     } else if(code == LV_EVENT_DEFOCUSED) {
         lv_keyboard_set_textarea(kb, NULL);
-        // lv_obj_set_height(tv, LV_VER_RES);
+        lv_obj_set_height(ui_farm1_lcd35ct_wifi_settings_box, LV_VER_RES);
         lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
         lv_indev_reset(NULL, ta);
 
     } else if(code == LV_EVENT_READY || code == LV_EVENT_CANCEL) {
-        // lv_obj_set_height(tv, LV_VER_RES);
+        lv_obj_set_height(ui_farm1_lcd35ct_wifi_settings_box, LV_VER_RES);
         lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
         lv_indev_reset(NULL, ta);   /*To forget the last clicked object to make it focusable again*/
     }
@@ -206,6 +208,8 @@ static void ta_event_cb(lv_event_t * e) {
 
 
 static int state = 0;
+static lv_obj_t * backdrop;
+static lv_obj_t * spinner;
 
 DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
     if (state == 0) {       // display init
@@ -265,6 +269,65 @@ DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
 
         lv_obj_add_event_cb(ui_farm1_lcd35ct_wifi_name_inp, ta_event_cb, LV_EVENT_ALL, kb);
         lv_obj_add_event_cb(ui_farm1_lcd35ct_wifi_pass_inp, ta_event_cb, LV_EVENT_ALL, kb);
+
+        lv_obj_add_event_cb(ui_di35ct_go_to_settings_btn, [](lv_event_t *e) {
+            lv_textarea_set_text(ui_farm1_lcd35ct_wifi_name_inp, GlobalConfigs["wifi"]["ssid"].as<String>().c_str());
+            lv_textarea_set_text(ui_farm1_lcd35ct_wifi_pass_inp, GlobalConfigs["wifi"]["password"].as<String>().c_str());
+        }, LV_EVENT_CLICKED, NULL);
+
+        lv_obj_add_event_cb(ui_farm1_lcd35ct_wifi_save_btn, [](lv_event_t *e) {
+            WiFiManager_stop();
+            const char *wifi_name = lv_textarea_get_text(ui_farm1_lcd35ct_wifi_name_inp);
+            const char *wifi_password = lv_textarea_get_text(ui_farm1_lcd35ct_wifi_pass_inp);
+            GlobalConfigs["wifi"]["ssid"] = wifi_name;
+            GlobalConfigs["wifi"]["password"] = wifi_password;
+            StorageConfigs_save();
+            WiFi.disconnect();
+            extern bool wifi_force_disconnect;
+            wifi_force_disconnect = true;
+            WiFiManager_run();
+
+            lv_event_send(ui_farm1_lcd35ct_wifi_settings_back, LV_EVENT_CLICKED, NULL);
+        }, LV_EVENT_CLICKED, NULL);
+
+        lv_obj_add_event_cb(ui_farm1_lcd35ct_wifi_scan_btn, [](lv_event_t *e) {
+            backdrop = lv_obj_create(lv_scr_act());
+            lv_obj_set_size(backdrop, lv_pct(100), lv_pct(100));
+            lv_obj_set_style_bg_color(backdrop, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_opa(backdrop, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_radius(backdrop, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_border_width(backdrop, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+            spinner = lv_spinner_create(backdrop, 1000, 60);
+            lv_obj_set_size(spinner, 80, 80);
+            lv_obj_center(spinner);
+            lv_obj_set_style_arc_color(spinner, lv_color_hex(0x10C172), LV_PART_INDICATOR);
+
+            WiFiManager_scanReq();
+            lv_timer_create([](lv_timer_t * timer) {
+                if (WiFiManager_isScanDone()) {
+                    lv_obj_t * wifi_list = lv_list_create(backdrop);
+                    lv_obj_set_style_border_width(wifi_list, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_obj_set_size(wifi_list, 300, lv_pct(100));
+                    lv_obj_set_align(wifi_list, LV_ALIGN_TOP_MID);
+
+                    lv_event_cb_t event_handler = [](lv_event_t * e) {
+                        const char * ssid = lv_list_get_btn_text(NULL, lv_event_get_target(e));
+                        lv_textarea_set_text(ui_farm1_lcd35ct_wifi_name_inp, ssid);
+                        lv_obj_del(backdrop);
+                    };
+
+                    int16_t found = WiFiManager_scanFound();
+                    for (uint16_t i=0;i<found;i++) {
+                        lv_obj_t * btn = lv_list_add_btn(wifi_list, LV_SYMBOL_WIFI, WiFi.SSID(i).c_str());
+                        lv_obj_add_event_cb(btn, event_handler, LV_EVENT_CLICKED, (void *) WiFi.SSID(i).c_str());
+                    }
+
+                    lv_obj_del(spinner);
+                    lv_timer_del(timer);
+                }
+            }, 100, NULL);
+        }, LV_EVENT_CLICKED, NULL);
 
         pinMode(LCD_BL_PIN, OUTPUT);
         digitalWrite(LCD_BL_PIN, LOW);

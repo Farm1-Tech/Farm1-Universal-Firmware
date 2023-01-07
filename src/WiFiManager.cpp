@@ -3,7 +3,7 @@
 #include "./StorageConfigs.h"
 #include "./Board/Board.h"
 
-static bool wifi_force_disconnect = false;
+bool wifi_force_disconnect = false;
 
 static void WiFiEvent(WiFiEvent_t event){
     switch(event) {
@@ -20,13 +20,35 @@ static void WiFiEvent(WiFiEvent_t event){
 }
 
 static TaskHandle_t WiFiManagerTaskHandle = NULL;
+static EventGroupHandle_t WiFiEventGroup = NULL;
+
+#define WIFI_UPDATE_REQ_FLAG BIT0
+#define WIFI_SCAN_REQ_FLAG   BIT1
+
+static int16_t wifi_scan_found = 0;
 
 static void WiFiManagerTask(void*) {
     int state = 0;
+    
     while(1) {
+        EventBits_t wifi_flag = xEventGroupGetBits(WiFiEventGroup);
+        if (wifi_flag & WIFI_SCAN_REQ_FLAG) {
+            WiFi.disconnect();
+            delay(50);
+            wifi_scan_found = WiFi.scanNetworks();
+            xEventGroupClearBits(WiFiEventGroup, WIFI_SCAN_REQ_FLAG);
+            state = 0;
+        }
+
+        bool bypass_check_connect = false;
+        if (wifi_flag & WIFI_UPDATE_REQ_FLAG) {
+            bypass_check_connect = true;
+            state = 0;
+        }
+
         if (state == 0) {
-            if (!WiFi.isConnected()) {
-                if (GlobalConfigs.containsKey("wifi") && GlobalConfigs["wifi"].containsKey("ssid") && GlobalConfigs["wifi"].containsKey("password")) {
+            if ((!WiFi.isConnected()) || bypass_check_connect) {
+                if (!GlobalConfigs["wifi"]["ssid"].isNull()) {
                     // Serial.println("Reconnect WiFi");
                     WiFi.onEvent(WiFiEvent);
                     WiFi.begin(
@@ -79,13 +101,14 @@ static void WiFiManagerTask(void*) {
             }
         }
 
-        delay(100);
+        delay(50);
     }
 
     vTaskDelete(NULL);
 }
 
 void WiFiManager_init() {
+    WiFiEventGroup = xEventGroupCreate();
     xTaskCreatePinnedToCore(WiFiManagerTask, "WiFiManagerTask", 4 * 1024, NULL, 20, &WiFiManagerTaskHandle, PRO_CPU_NUM);
 }
 
@@ -95,4 +118,18 @@ void WiFiManager_stop() {
 
 void WiFiManager_run() {
     vTaskResume(WiFiManagerTaskHandle);
+}
+
+void WiFiManager_scanReq() {
+    wifi_scan_found = 0;
+    xEventGroupSetBits(WiFiEventGroup, WIFI_SCAN_REQ_FLAG);
+}
+
+bool WiFiManager_isScanDone() {
+    EventBits_t wifi_flag = xEventGroupGetBits(WiFiEventGroup);
+    return (wifi_flag & WIFI_SCAN_REQ_FLAG) == 0;
+}
+
+int16_t WiFiManager_scanFound() {
+    return wifi_scan_found;
 }
