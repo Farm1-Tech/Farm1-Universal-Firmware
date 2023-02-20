@@ -56,6 +56,13 @@ bool reg_read(uint8_t addr, uint8_t *data, size_t len) {
     return true;
 }
 
+bool reg_write(uint8_t addr, uint8_t *data, size_t len) {
+    Wire1.beginTransmission(TOUCH_ADDR);
+    Wire1.write(addr);
+    Wire1.write(data, len);
+    return Wire1.endTransmission() == 0;
+}
+
 /* Display flushing */
 static void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p ) {
     tft.drawBitmap(area->x1, area->y1, area->x2, area->y2, &color_p->full);
@@ -113,7 +120,7 @@ static void update_sensor_value_timer(lv_timer_t* timer) {
     for (uint8_t i=0;i<4;i++) {
         float value = 0;
         if (Sensor_getValueOne(type_map[i], (void*)&value) == WORK_WELL) {
-            lv_label_set_text_fmt(value_label_map[i], "%.1f", value);
+            lv_label_set_text_fmt(value_label_map[i], "%.1f",type_map[i] == AMBIENT_LIGHT ? (value / 1000.0f) : value);
         } else {
             lv_label_set_text(value_label_map[i], "");
         }
@@ -217,6 +224,13 @@ DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
         Wire1.begin(19, 16, 100E3);
         tft.init();
 
+        // Config Touch chip
+        {
+            // Adjust threshold
+            uint8_t threshold = 128; // Default threshold for touch detection
+            reg_write(0x80, &threshold, 1);
+        }
+
         lv_init();
 
         buf = (lv_color_t*) malloc(DISPLAY_BUFFER_SIZE * sizeof(lv_color_t));
@@ -254,7 +268,7 @@ DisplayStatus_t Farm1_LCD_3_5_CT_process(void* args) {
             lv_label_set_text(value_label_map[i], "");
         }
           
-        // lv_timer_create(update_sensor_value_timer, 1000, NULL);
+        lv_timer_create(update_sensor_value_timer, 1000, NULL);
         lv_timer_create(update_time_timer, 300, NULL);
         lv_timer_create(update_connection_timer, 300, NULL);
 
